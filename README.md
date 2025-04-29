@@ -1,46 +1,78 @@
-# Getting Started with Create React App
+# Eum - 개발자 커뮤니티 플랫폼
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 프로젝트 소개
 
-## Available Scripts
+Eum은 개발자들이 팀을 구하고, 프로젝트를 함께 진행하며, 지식을 공유할 수 있는 커뮤니티 플랫폼입니다. 개발자와 디자이너가 함께 성장하고 협업할 수 있는 공간을 제공합니다.
 
-In the project directory, you can run:
+## 주요 기능
 
-### `npm start`
+- **프로젝트 모집**: 다양한 개발 프로젝트에 참여하거나 직접 팀원을 모집할 수 있습니다.
+- **스터디 그룹**: 함께 공부하고 성장할 수 있는 스터디 그룹을 찾거나 만들 수 있습니다.
+- **IT 행사 정보**: 컨퍼런스, 해커톤, 부트캠프 등 다양한 IT 행사 정보를 제공합니다.
+- **실시간 커뮤니케이션**: 개발자들과 실시간으로 소통하고 정보를 교환할 수 있습니다.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 기술 스택
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- **Frontend**: React, TypeScript, Styled-Components
+- **State Management**: React Hooks
+- **Routing**: React Router
+- **UI/UX**: 반응형 디자인, 사용자 친화적 인터페이스
 
-### `npm test`
+## 시작하기
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 설치
 
-### `npm run build`
+```bash
+# 저장소 클론
+git clone https://github.com/yourusername/enum-front.git
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# 디렉토리 이동
+cd enum-front
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+# 의존성 설치
+npm install
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# 개발 서버 실행
+npm start
+```
 
-### `npm run eject`
+### 빌드
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+# 프로덕션용 빌드
+npm run build
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 폴더 구조
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```
+enum-front/
+├── public/              # 정적 파일
+├── src/                 # 소스 코드
+│   ├── assets/          # 이미지, 폰트 등
+│   ├── components/      # 재사용 가능한 컴포넌트
+│   ├── pages/           # 페이지 컴포넌트
+│   ├── routes/          # 라우팅 설정
+│   ├── styles/          # 전역 스타일
+│   ├── App.tsx          # 앱 컴포넌트
+│   └── index.tsx        # 진입점
+└── package.json         # 프로젝트 설정
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## 컨트리뷰션
 
-## Learn More
+1. 이 저장소를 포크합니다.
+2. 새로운 브랜치를 생성합니다: `git checkout -b feature/amazing-feature`
+3. 변경사항을 커밋합니다: `git commit -m 'Add some amazing feature'`
+4. 포크한 저장소에 푸시합니다: `git push origin feature/amazing-feature`
+5. Pull Request를 생성합니다.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 라이센스
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+이 프로젝트는 MIT 라이센스를 따릅니다 - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+## 연락처
+
+프로젝트 관리자 - 이메일 주소
+
+프로젝트 링크: https://github.com/your-username/enum-front
