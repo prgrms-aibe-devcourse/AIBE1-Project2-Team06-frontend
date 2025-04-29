@@ -73,6 +73,4 @@ enum-front/
 
 ## 연락처
 
-프로젝트 관리자 - 이메일 주소
-
-프로젝트 링크: https://github.com/your-username/enum-front
+프로젝트 링크: https://github.com/prgrms-aibe-devcourse/AIBE1-Project2-Team06-frontend
