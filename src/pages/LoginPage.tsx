@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
+// 카카오 로그인 관련 상수
+const KAKAO_CLIENT_ID = "47f3cbfe455bf08ea91d0a632829b65e";
+const KAKAO_REDIRECT_URI = "http://localhost:3000/auth/kakao/callback";
+const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
+
 const LoginContainer = styled.div`
   width: 100%;
   min-height: 100vh;
@@ -84,11 +89,11 @@ const OauthButtons = styled.div`
   margin-top: 24px;
 `;
 
-const OauthButton = styled.button<{ bgColor: string }>`
+const OauthButton = styled.button<{ bgColor: string; textColor?: string }>`
   width: 100%;
   padding: 12px 16px;
   background-color: ${(props) => props.bgColor};
-  color: white;
+  color: ${(props) => props.textColor || "white"};
   border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
@@ -165,6 +170,11 @@ const LoginPage: React.FC = () => {
     alert("로그인 성공!");
   };
 
+  // 카카오 로그인 핸들러
+  const handleKakaoLogin = () => {
+    window.location.href = KAKAO_AUTH_URL;
+  };
+
   return (
     <LoginContainer>
       <LoginCard>
@@ -199,7 +209,13 @@ const LoginPage: React.FC = () => {
         </Divider>
 
         <OauthButtons>
-          <OauthButton bgColor="#4267B2">페이스북으로 로그인</OauthButton>
+          <OauthButton
+            bgColor="#FEE500"
+            textColor="#000000"
+            onClick={handleKakaoLogin}
+          >
+            카카오로 로그인
+          </OauthButton>
           <OauthButton bgColor="#DB4437">구글로 로그인</OauthButton>
           <OauthButton bgColor="#000000">깃허브로 로그인</OauthButton>
         </OauthButtons>
