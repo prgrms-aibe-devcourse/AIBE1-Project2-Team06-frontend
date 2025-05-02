@@ -18,6 +18,7 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'CookieRun-Regular', 'Noto Sans KR', sans-serif;
     color: #333;
     line-height: 1.5;
+    padding-top: 64px; /* 헤더 높이만큼 여백 추가 */
   }
 
   a {
