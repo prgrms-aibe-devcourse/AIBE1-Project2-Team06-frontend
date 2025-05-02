@@ -3,17 +3,11 @@ import styled from "styled-components";
 
 // 카카오 인증 관련 상수
 // 환경 변수에서 값을 가져오거나 기본값 사용
-const KAKAO_CLIENT_ID =
-  process.env.REACT_APP_KAKAO_CLIENT_ID || "47f3cbfe455bf08ea91d0a632829b65e";
+const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;
 const KAKAO_REDIRECT_URI =
   process.env.REACT_APP_KAKAO_REDIRECT_URI ||
   "http://localhost:3000/auth/kakao/callback";
 const KAKAO_AUTH_URL = "https://kauth.kakao.com/oauth/authorize";
-
-// 환경 변수 사용 관련 설명 추가
-// 사용 방법: .env 또는 .env.local 파일에 아래 변수 추가
-// REACT_APP_KAKAO_CLIENT_ID=47f3cbfe455bf08ea91d0a632829b65e
-// REACT_APP_KAKAO_REDIRECT_URI=http://localhost:3000/auth/kakao/callback
 
 // 모달 배경
 const ModalOverlay = styled.div`
