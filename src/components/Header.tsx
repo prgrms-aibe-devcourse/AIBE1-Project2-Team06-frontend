@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import LoginModal from "./LoginModal";
 
 const HeaderContainer = styled.header`
   width: 100%;
@@ -39,6 +40,7 @@ const NavItem = styled.span`
   font-size: 16px;
   color: #333;
   font-weight: 500;
+  cursor: pointer;
 
   &:hover {
     color: #3498db;
@@ -46,28 +48,40 @@ const NavItem = styled.span`
 `;
 
 const Header: React.FC = () => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLoginModalOpen(true);
+  };
+
   return (
-    <HeaderContainer>
-      <HeaderContent>
-        <Link to="/">
-          <Logo>Eum</Logo>
-        </Link>
-        <Navigation>
-          <Link to="/projects">
-            <NavItem>프로젝트</NavItem>
+    <>
+      <HeaderContainer>
+        <HeaderContent>
+          <Link to="/">
+            <Logo>Eum</Logo>
           </Link>
-          <Link to="/teams">
-            <NavItem>팀원 모집</NavItem>
-          </Link>
-          <Link to="/community">
-            <NavItem>커뮤니티</NavItem>
-          </Link>
-          <Link to="/login">
-            <NavItem>로그인</NavItem>
-          </Link>
-        </Navigation>
-      </HeaderContent>
-    </HeaderContainer>
+          <Navigation>
+            <Link to="/projects">
+              <NavItem>프로젝트</NavItem>
+            </Link>
+            <Link to="/teams">
+              <NavItem>팀원 모집</NavItem>
+            </Link>
+            <Link to="/community">
+              <NavItem>커뮤니티</NavItem>
+            </Link>
+            <NavItem onClick={handleLoginClick}>로그인</NavItem>
+          </Navigation>
+        </HeaderContent>
+      </HeaderContainer>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+    </>
   );
 };
 

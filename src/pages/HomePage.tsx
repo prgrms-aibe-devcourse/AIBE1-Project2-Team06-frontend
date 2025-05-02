@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import Banner from "../components/Banner";
 import ProjectSection from "../components/ProjectSection";
@@ -49,6 +49,16 @@ const StatLabel = styled.div`
 `;
 
 const HomePage: React.FC = () => {
+  useEffect(() => {
+    // 로그인 상태 확인
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      console.log("홈페이지: 로그인 상태 확인 - 로그인됨");
+    } else {
+      console.log("홈페이지: 로그인 상태 확인 - 로그인되지 않음");
+    }
+  }, []);
+
   return (
     <StyledHomePage>
       <Banner />
