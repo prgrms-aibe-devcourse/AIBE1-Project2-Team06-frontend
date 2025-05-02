@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { brandColors } from "../styles/GlobalStyle";
 
 // 전체 컨테이너
 const PageContainer = styled.div`
@@ -27,7 +28,7 @@ const ProfileImage = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  border: 2px solid #ffe500;
+  border: 2px solid ${brandColors.primary};
   position: relative;
   overflow: hidden;
 `;
@@ -37,7 +38,7 @@ const Badge = styled.div`
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #ffe500;
+  background-color: ${brandColors.primary};
   position: absolute;
   bottom: 0;
   right: 0;
@@ -196,8 +197,8 @@ const TagsContainer = styled.div`
 const SelectedTag = styled.div`
   display: inline-flex;
   align-items: center;
-  background-color: #e8f4fd;
-  color: #2980b9;
+  background-color: ${brandColors.primaryLight};
+  color: ${brandColors.primaryText};
   padding: 4px 12px;
   border-radius: 20px;
   margin-right: 8px;
@@ -209,17 +210,21 @@ const SelectedTag = styled.div`
 const TagOption = styled.div<{ isSelected: boolean }>`
   display: inline-flex;
   align-items: center;
-  background-color: ${(props) => (props.isSelected ? "#e8f4fd" : "#f5f5f5")};
-  color: ${(props) => (props.isSelected ? "#2980b9" : "#555")};
+  background-color: ${(props) =>
+    props.isSelected ? brandColors.primaryLight : "#f5f5f5"};
+  color: ${(props) => (props.isSelected ? brandColors.primaryText : "#555")};
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 14px;
   cursor: pointer;
   border: ${(props) =>
-    props.isSelected ? "1px solid #2980b9" : "1px solid transparent"};
+    props.isSelected
+      ? `1px solid ${brandColors.primary}`
+      : "1px solid transparent"};
 
   &:hover {
-    background-color: ${(props) => (props.isSelected ? "#e8f4fd" : "#ebebeb")};
+    background-color: ${(props) =>
+      props.isSelected ? brandColors.primaryLight : "#ebebeb"};
   }
 `;
 
@@ -234,7 +239,7 @@ const RemoveTag = styled.span`
 const ToggleTagsButton = styled.button`
   background: none;
   border: none;
-  color: #3498db;
+  color: ${brandColors.secondary};
   font-size: 14px;
   cursor: pointer;
   display: flex;
@@ -252,7 +257,7 @@ const ToggleTagsButton = styled.button`
 const SubmitButton = styled.button`
   width: 100%;
   padding: 14px;
-  background-color: #3498db;
+  background-color: ${brandColors.primary};
   color: white;
   border: none;
   border-radius: 8px;
@@ -262,7 +267,7 @@ const SubmitButton = styled.button`
   margin-bottom: 20px;
 
   &:hover {
-    background-color: #2980b9;
+    background-color: ${brandColors.primaryDark};
   }
 `;
 

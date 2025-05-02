@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { brandColors } from "../styles/GlobalStyle";
 
 const FooterContainer = styled.footer`
   width: 100%;
@@ -27,7 +28,7 @@ const TopSection = styled.div`
 const Logo = styled.div`
   font-size: 22px;
   font-weight: bold;
-  color: #3498db;
+  color: ${brandColors.primary};
 `;
 
 const SocialLinks = styled.div`
@@ -46,7 +47,7 @@ const SocialIcon = styled.div`
   cursor: pointer;
 
   &:hover {
-    background-color: #3498db;
+    background-color: ${brandColors.primary};
     color: white;
   }
 `;
@@ -74,7 +75,7 @@ const ColumnItem = styled.a`
   color: #555;
 
   &:hover {
-    color: #3498db;
+    color: ${brandColors.secondary};
   }
 `;
 

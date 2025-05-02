@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { brandColors } from "../../styles/GlobalStyle";
 
 // 백엔드 요청 형식 간소화
 interface LoginRequestDto {
@@ -35,7 +36,7 @@ const Spinner = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border-left-color: #3498db;
+  border-left-color: ${brandColors.primary};
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 
@@ -57,7 +58,7 @@ const Message = styled.p`
 
 const Button = styled.button`
   padding: 10px 20px;
-  background-color: #3498db;
+  background-color: ${brandColors.primary};
   color: white;
   border: none;
   border-radius: 4px;
@@ -66,7 +67,7 @@ const Button = styled.button`
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #2980b9;
+    background-color: ${brandColors.primaryDark};
   }
 `;
 

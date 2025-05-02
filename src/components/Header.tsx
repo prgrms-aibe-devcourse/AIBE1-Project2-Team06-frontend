@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { brandColors } from "../styles/GlobalStyle";
 import LoginModal from "./LoginModal";
 
 const HeaderContainer = styled.header`
@@ -27,7 +28,7 @@ const HeaderContent = styled.div`
 const Logo = styled.div`
   font-size: 24px;
   font-weight: 700;
-  color: #3498db;
+  color: ${brandColors.primary};
   font-family: "CookieRun-Regular", sans-serif;
 `;
 
@@ -44,7 +45,7 @@ const NavItem = styled.span`
   cursor: pointer;
 
   &:hover {
-    color: #3498db;
+    color: ${brandColors.secondary};
   }
 `;
 
@@ -58,7 +59,7 @@ const ProfileIcon = styled.div`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 2px solid #ffe500;
+  border: 2px solid ${brandColors.primary};
   position: relative;
 `;
 
@@ -139,7 +140,12 @@ const Header: React.FC = () => {
 
             {isLoggedIn ? (
               <ProfileIcon onClick={handleProfileClick}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFE500">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill={brandColors.primary}
+                >
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
                 </svg>
                 {isMenuOpen && (

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { brandColors } from "../styles/GlobalStyle";
 // import { FaThumbsUp } from 'react-icons/fa';
 // import { GoComment } from 'react-icons/go';
 
@@ -101,8 +102,8 @@ const CardHeader = styled.div`
 `;
 
 const TagCategory = styled.div`
-  background-color: #fff7e0;
-  color: #f0b90b;
+  background-color: ${brandColors.primaryLight};
+  color: ${brandColors.primaryText};
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 30px;
@@ -124,7 +125,7 @@ const TagEducation = styled.div`
 
 const HandIcon = styled.div`
   margin-left: auto;
-  color: #ddd;
+  color: ${brandColors.primary};
   font-size: 20px;
 `;
 
@@ -322,7 +323,7 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
         {category === "스터디" && (
           <TagEducation>🎓 따끈따끈 새 글</TagEducation>
         )}
-        <HandIcon>👋</HandIcon>
+        <HandIcon>🌱</HandIcon>
       </CardHeader>
       <CardContent>
         <CardDate>{date}</CardDate>

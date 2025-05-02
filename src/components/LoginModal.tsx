@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { brandColors } from "../styles/GlobalStyle";
 
 // 카카오 인증 관련 상수
 // 환경 변수에서 값을 가져오거나 기본값 사용
@@ -52,7 +53,7 @@ const Logo = styled.div`
   font-size: 36px;
   font-weight: 800;
   margin-bottom: 24px;
-  color: #333;
+  color: ${brandColors.primary};
   text-align: center;
 `;
 
@@ -112,7 +113,7 @@ const GithubButton = styled(SocialButton)`
 // 카카오 로그인 버튼
 const KakaoButton = styled(SocialButton)`
   background-color: #fee500;
-  color: #000;
+  color: #000000;
   &:hover {
     background-color: #fada0a;
   }
@@ -193,7 +194,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             width="20"
             height="20"
             viewBox="0 0 24 24"
-            fill="#000"
+            fill="#000000"
           >
             <path d="M12 3c-5.088 0-9.225 3.528-9.225 7.875 0 2.542 1.291 4.792 3.295 6.26-.479 1.741-1.733 3.321-1.733 3.321s-.124.088-.231.178c-.19.153-.132.397.103.461.223.061 1.126.327 3.159-.599.892.207 1.726.384 2.632.384 5.088 0 9.225-3.528 9.225-7.875S17.088 3 12 3z" />
           </svg>

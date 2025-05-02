@@ -1,5 +1,14 @@
 import { createGlobalStyle } from "styled-components";
 
+// 브랜드 컬러 변수 정의
+export const brandColors = {
+  primary: "#8ED11E", // 메인 연두색
+  primaryDark: "#75B10D", // 더 진한 연두색
+  primaryLight: "#F0FFDD", // 연한 연두색 배경
+  primaryText: "#5A8700", // 연두색 글자색
+  secondary: "#6CA723", // 중간 톤의 연두색
+};
+
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'CookieRun-Regular';
@@ -34,6 +43,38 @@ const GlobalStyle = createGlobalStyle`
 
   ul, ol {
     list-style: none;
+  }
+
+  /* 기본 버튼 스타일 */
+  .btn {
+    background-color: ${brandColors.primary};
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+
+    &:hover {
+      background-color: ${brandColors.primaryDark};
+    }
+  }
+
+  /* 버튼 스타일링 */
+  button.primary {
+    background-color: ${brandColors.primary};
+    color: white;
+    
+    &:hover {
+      background-color: ${brandColors.primaryDark};
+    }
+  }
+
+  /* 링크 스타일링 */
+  a.primary {
+    color: ${brandColors.primaryText};
+    
+    &:hover {
+      color: ${brandColors.primaryDark};
+    }
   }
 `;
 

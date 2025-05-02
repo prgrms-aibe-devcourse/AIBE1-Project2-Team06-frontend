@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { brandColors } from "../styles/GlobalStyle";
 
 const BannerWrapper = styled.div`
   width: 100%;
@@ -13,7 +14,7 @@ const BannerContainer = styled.div`
   width: 100%;
   max-width: 1200px;
   min-height: 220px;
-  background-color: #e8f4ff;
+  background-color: ${brandColors.primaryLight};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -47,7 +48,7 @@ const TextArea = styled.div`
 `;
 
 const NoticeTag = styled.div`
-  background-color: #2196f3;
+  background-color: ${brandColors.primary};
   color: white;
   display: inline-block;
   padding: 6px 16px;
@@ -125,7 +126,7 @@ const Banner: React.FC = () => {
             <NoticeTag>NOTICE</NoticeTag>
             <Title>IT 행사 정보도 Eum에서!</Title>
             <Description>
-              공모전, 컨퍼런스, 해커톤, 부트캠프까지 한번에 👋
+              공모전, 컨퍼런스, 해커톤, 부트캠프까지 한번에 🌱
             </Description>
           </TextArea>
           <ImageArea>
