@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import KakaoCallback from "../components/OAuth/KakaoCallback";
 import MyPage from "../pages/MyPage";
+import ProjectDetailPage from "../pages/ProjectDetailPage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
       <Route path="/mypage" element={<MyPage />} />
+      <Route path="/project/:id" element={<ProjectDetailPage />} />
       {/* 추후 추가될 라우트들 */}
       <Route path="/projects" element={<div>프로젝트 페이지 (준비중)</div>} />
       <Route path="/teams" element={<div>팀원 모집 페이지 (준비중)</div>} />

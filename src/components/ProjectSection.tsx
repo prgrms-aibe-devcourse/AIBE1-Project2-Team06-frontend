@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { useNavigate } from "react-router-dom";
 // import { FaThumbsUp } from 'react-icons/fa';
 // import { GoComment } from 'react-icons/go';
 
@@ -88,6 +89,7 @@ const ProjectCardWrapper = styled.div`
   background-color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-4px);
@@ -145,10 +147,13 @@ const CardTitle = styled.h3`
   margin-bottom: 8px;
   color: #333;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
   line-height: 1.4;
+  height: 22px;
   font-family: "CookieRun-Regular", sans-serif;
 `;
 
@@ -300,6 +305,7 @@ const PageNumber = styled.button<{ active?: boolean }>`
 `;
 
 interface ProjectCardItemProps {
+  id: number;
   title: string;
   description: string;
   techStack: string[];
@@ -309,6 +315,7 @@ interface ProjectCardItemProps {
 }
 
 const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
+  id,
   title,
   description,
   techStack,
@@ -316,8 +323,14 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
   category,
   date = "마감일 | 2025.05.13",
 }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/project/${id}`);
+  };
+
   return (
-    <ProjectCardWrapper>
+    <ProjectCardWrapper onClick={handleClick}>
       <CardHeader>
         <TagCategory>👨‍💻 프로젝트</TagCategory>
         {category === "스터디" && (
@@ -475,6 +488,7 @@ const ProjectSection: React.FC = () => {
           {filteredProjects.map((project) => (
             <ProjectCardItem
               key={project.id}
+              id={project.id}
               title={project.title}
               description={project.description}
               techStack={project.techStack}
