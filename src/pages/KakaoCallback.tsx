@@ -2,6 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 
+// 백엔드 요청 형식에 맞는 인터페이스 정의
+interface LoginRequestDto {
+  code: string;
+  provider: string;
+}
+
+// 백엔드 응답 형식에 맞는 인터페이스 정의
+interface LoginResponseDto {
+  accessToken: string;
+  // 기타 필요한 응답 필드 추가
+}
+
 const CallbackContainer = styled.div`
   width: 100%;
   min-height: 100vh;
@@ -48,19 +60,25 @@ const KakaoCallback: React.FC = () => {
     // 백엔드로 인증 코드 전송
     const sendAuthCodeToBackend = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/v1/login", {
+        // LoginRequestDto 형식으로 요청 본문 구성
+        const loginRequestDto: LoginRequestDto = {
+          code: authCode,
+          provider: "kakao",
+        };
+
+        const response = await fetch("/api/v1/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ code: authCode, provider: "kakao" }),
+          body: JSON.stringify(loginRequestDto),
         });
 
         if (!response.ok) {
           throw new Error("서버 응답 오류");
         }
 
-        const data = await response.json();
+        const data: LoginResponseDto = await response.json();
         setStatus("로그인 성공! 리디렉션 중...");
 
         // 여기서 필요에 따라 토큰 저장 등의 작업 수행
