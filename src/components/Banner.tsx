@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 
@@ -117,28 +117,76 @@ const NavButton = styled.button`
   }
 `;
 
+// 새로 추가: 자동 슬라이드를 위한 애니메이션 스타일
+const BannerSlide = styled.div<{ active: boolean }>`
+  display: ${(props) => (props.active ? "block" : "none")};
+  width: 100%;
+`;
+
+// 배너 데이터
+const bannerData = [
+  {
+    tag: "NOTICE",
+    title: "나에게 딱 맞는 팀원을 찾고 있나요?",
+    description: "프론트엔드부터 기획자까지, Eum에서 만나요 👩‍💻🤝👨‍🎨",
+  },
+  {
+    tag: "NOTICE",
+    title: "협업이 필요한 순간, Eum",
+    description: "디자이너, 개발자, 마케터가 함께 만드는 프로젝트의 시작 🚀",
+  },
+  {
+    tag: "NOTICE",
+    title: "IT 행사 정보도 Eum에서!",
+    description: "공모전, 컨퍼런스, 해커톤, 부트캠프까지 한번에 🌱",
+  },
+];
+
 const Banner: React.FC = () => {
+  const [currentBanner, setCurrentBanner] = useState(0);
+
+  // 자동 슬라이드 기능
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % bannerData.length);
+    }, 5000); // 5초마다 슬라이드 변경
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // 이전 배너로 이동
+  const handlePrevBanner = () => {
+    setCurrentBanner((prev) => (prev === 0 ? bannerData.length - 1 : prev - 1));
+  };
+
+  // 다음 배너로 이동
+  const handleNextBanner = () => {
+    setCurrentBanner((prev) => (prev + 1) % bannerData.length);
+  };
+
   return (
     <BannerWrapper>
       <BannerContainer>
-        <BannerContent>
-          <TextArea>
-            <NoticeTag>NOTICE</NoticeTag>
-            <Title>IT 행사 정보도 Eum에서!</Title>
-            <Description>
-              공모전, 컨퍼런스, 해커톤, 부트캠프까지 한번에 🌱
-            </Description>
-          </TextArea>
-          <ImageArea>
-            <ChatImage />
-          </ImageArea>
-        </BannerContent>
+        {bannerData.map((banner, index) => (
+          <BannerSlide key={index} active={index === currentBanner}>
+            <BannerContent>
+              <TextArea>
+                <NoticeTag>{banner.tag}</NoticeTag>
+                <Title>{banner.title}</Title>
+                <Description>{banner.description}</Description>
+              </TextArea>
+              <ImageArea>
+                <ChatImage />
+              </ImageArea>
+            </BannerContent>
+          </BannerSlide>
+        ))}
         <PageIndicator>
-          <NavButton>&lt;</NavButton>
-          <div>3</div>
+          <NavButton onClick={handlePrevBanner}>&lt;</NavButton>
+          <div>{currentBanner + 1}</div>
           <div>/</div>
-          <div>3</div>
-          <NavButton>&gt;</NavButton>
+          <div>{bannerData.length}</div>
+          <NavButton onClick={handleNextBanner}>&gt;</NavButton>
         </PageIndicator>
       </BannerContainer>
     </BannerWrapper>
