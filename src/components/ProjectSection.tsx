@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import { useNavigate } from "react-router-dom";
@@ -260,24 +260,6 @@ const StatusBadge = styled.div<{ status: string }>`
   }};
 `;
 
-const MoreButton = styled.button`
-  background-color: white;
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 10px 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: fit-content;
-  margin: 24px auto 0;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #f8f9fa;
-    color: #333;
-  }
-`;
-
 const Pagination = styled.div`
   display: flex;
   justify-content: center;
@@ -287,10 +269,11 @@ const Pagination = styled.div`
 `;
 
 const PageNumber = styled.button<{ active?: boolean }>`
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background-color: ${(props) => (props.active ? "#3498db" : "transparent")};
+  background-color: ${(props) =>
+    props.active ? brandColors.primary : "transparent"};
   color: ${(props) => (props.active ? "white" : "#666")};
   display: flex;
   align-items: center;
@@ -298,9 +281,12 @@ const PageNumber = styled.button<{ active?: boolean }>`
   font-size: 14px;
   cursor: pointer;
   border: none;
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${(props) => (props.active ? "#3498db" : "#f0f0f0")};
+    background-color: ${(props) =>
+      props.active ? brandColors.primary : brandColors.primaryLight};
+    color: ${(props) => (props.active ? "white" : brandColors.primaryText)};
   }
 `;
 
@@ -370,6 +356,8 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
 
 const ProjectSection: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState("전체");
+  const [currentPage, setCurrentPage] = useState(1);
+  const projectsPerPage = 8;
 
   // 예시 데이터
   const projects = [
@@ -444,6 +432,110 @@ const ProjectSection: React.FC = () => {
       recruitmentStatus: "모집중",
       category: "스터디",
     },
+    {
+      id: 9,
+      title: "웹 퍼포먼스 최적화 스터디",
+      description: "웹 성능 최적화를 위한 다양한 기법을 학습하는 스터디입니다.",
+      techStack: ["JavaScript", "React", "Webpack"],
+      recruitmentStatus: "모집중",
+      category: "스터디",
+    },
+    {
+      id: 10,
+      title: "UI/UX 디자인 멘토링",
+      description:
+        "실무 디자이너의 멘토링을 통해 UI/UX 역량을 키우는 프로그램입니다.",
+      techStack: ["Figma", "Adobe XD", "Sketch"],
+      recruitmentStatus: "모집중",
+      category: "프로젝트",
+    },
+    {
+      id: 11,
+      title: "오픈소스 기여 프로젝트",
+      description:
+        "인기 오픈소스 프로젝트에 기여하는 경험을 쌓는 팀 프로젝트입니다.",
+      techStack: ["Git", "GitHub", "Linux"],
+      recruitmentStatus: "모집중",
+      category: "프로젝트",
+    },
+    {
+      id: 12,
+      title: "머신러닝 기초 스터디",
+      description:
+        "머신러닝의 기초 개념부터 실습까지 함께 학습하는 스터디입니다.",
+      techStack: ["Python", "TensorFlow", "PyTorch"],
+      recruitmentStatus: "모집중",
+      category: "스터디",
+    },
+    {
+      id: 13,
+      title: "모바일 앱 개발 프로젝트",
+      description:
+        "다양한 플랫폼에서 작동하는 모바일 앱을 개발하는 프로젝트입니다.",
+      techStack: ["Flutter", "Firebase", "Dart"],
+      recruitmentStatus: "모집중",
+      category: "프로젝트",
+    },
+    {
+      id: 14,
+      title: "DevOps 핵심 툴 학습",
+      description:
+        "현대적인 DevOps 도구들을 배우고 실무에 적용하는 방법을 학습합니다.",
+      techStack: ["Docker", "Kubernetes", "Jenkins"],
+      recruitmentStatus: "모집중",
+      category: "스터디",
+    },
+    {
+      id: 15,
+      title: "블록체인 기반 서비스 개발",
+      description:
+        "블록체인 기술을 활용한 실용적인 서비스를 개발하는 프로젝트입니다.",
+      techStack: ["Solidity", "Web3.js", "Ethereum"],
+      recruitmentStatus: "모집중",
+      category: "프로젝트",
+    },
+    {
+      id: 16,
+      title: "웹 접근성 향상 스터디",
+      description:
+        "모두가 이용할 수 있는 웹을 위한 접근성 향상 방법을 공부합니다.",
+      techStack: ["HTML", "CSS", "ARIA"],
+      recruitmentStatus: "모집중",
+      category: "스터디",
+    },
+    {
+      id: 17,
+      title: "클라우드 아키텍처 설계",
+      description:
+        "확장 가능한 클라우드 기반 시스템 아키텍처를 설계하는 프로젝트입니다.",
+      techStack: ["AWS", "Azure", "GCP"],
+      recruitmentStatus: "모집중",
+      category: "프로젝트",
+    },
+    {
+      id: 18,
+      title: "게임 개발 입문 스터디",
+      description: "게임 개발의 기초를 배우고 간단한 게임을 함께 만들어봅니다.",
+      techStack: ["Unity", "C#", "2D Graphics"],
+      recruitmentStatus: "모집중",
+      category: "스터디",
+    },
+    {
+      id: 19,
+      title: "데이터 시각화 프로젝트",
+      description: "복잡한 데이터를 이해하기 쉽게 시각화하는 프로젝트입니다.",
+      techStack: ["D3.js", "Tableau", "R"],
+      recruitmentStatus: "모집중",
+      category: "프로젝트",
+    },
+    {
+      id: 20,
+      title: "사이버 보안 스터디",
+      description: "웹과 네트워크 보안에 대한 개념과 실무 기술을 학습합니다.",
+      techStack: ["Network", "Linux", "Penetration Testing"],
+      recruitmentStatus: "모집중",
+      category: "스터디",
+    },
   ];
 
   const filteredProjects = projects.filter((project) => {
@@ -453,8 +545,126 @@ const ProjectSection: React.FC = () => {
     return true;
   });
 
+  // 페이징 처리
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = filteredProjects.slice(
+    indexOfFirstProject,
+    indexOfLastProject
+  );
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+
+  // 페이지 변경 함수
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // 페이지 상단으로 스크롤
+    window.scrollTo({
+      top: document.getElementById("project-section")?.offsetTop || 0,
+      behavior: "smooth",
+    });
+  };
+
+  // 페이지 번호 생성
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPageDisplay = 5;
+
+    if (totalPages <= maxPageDisplay) {
+      // 페이지가 5개 이하면 모든 페이지 번호 표시
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(
+          <PageNumber
+            key={i}
+            active={i === currentPage}
+            onClick={() => handlePageChange(i)}
+          >
+            {i}
+          </PageNumber>
+        );
+      }
+    } else {
+      // 페이지가 5개 초과일 때 처리
+      // 항상 현재 페이지, 첫 페이지, 마지막 페이지는 표시
+      // 그 외에는 현재 페이지 주변의 페이지만 표시
+
+      // 첫 페이지 표시
+      pageNumbers.push(
+        <PageNumber
+          key={1}
+          active={1 === currentPage}
+          onClick={() => handlePageChange(1)}
+        >
+          1
+        </PageNumber>
+      );
+
+      // 현재 페이지가 4보다 크면 "..." 표시
+      if (currentPage > 3) {
+        pageNumbers.push(
+          <PageNumber
+            key="ellipsis1"
+            onClick={() => handlePageChange(Math.floor(currentPage / 2))}
+          >
+            ...
+          </PageNumber>
+        );
+      }
+
+      // 현재 페이지 주변의 페이지 표시
+      const startPage = Math.max(2, currentPage - 1);
+      const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = startPage; i <= endPage; i++) {
+        if (i !== 1 && i !== totalPages) {
+          // 첫 페이지와 마지막 페이지는 이미 표시됨
+          pageNumbers.push(
+            <PageNumber
+              key={i}
+              active={i === currentPage}
+              onClick={() => handlePageChange(i)}
+            >
+              {i}
+            </PageNumber>
+          );
+        }
+      }
+
+      // 현재 페이지가 totalPages-3보다 작으면 "..." 표시
+      if (currentPage < totalPages - 2) {
+        pageNumbers.push(
+          <PageNumber
+            key="ellipsis2"
+            onClick={() =>
+              handlePageChange(Math.floor((currentPage + totalPages) / 2))
+            }
+          >
+            ...
+          </PageNumber>
+        );
+      }
+
+      // 마지막 페이지 표시
+      pageNumbers.push(
+        <PageNumber
+          key={totalPages}
+          active={totalPages === currentPage}
+          onClick={() => handlePageChange(totalPages)}
+        >
+          {totalPages}
+        </PageNumber>
+      );
+    }
+
+    return pageNumbers;
+  };
+
+  // 카테고리 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory]);
+
   return (
-    <SectionContainer>
+    <SectionContainer id="project-section">
       <SectionContent>
         <SectionHeader>
           <Title>Eum과 함께하는 프로젝트</Title>
@@ -485,7 +695,7 @@ const ProjectSection: React.FC = () => {
         </CategoryTabs>
 
         <CardsGrid>
-          {filteredProjects.map((project) => (
+          {currentProjects.map((project) => (
             <ProjectCardItem
               key={project.id}
               id={project.id}
@@ -498,15 +708,7 @@ const ProjectSection: React.FC = () => {
           ))}
         </CardsGrid>
 
-        <MoreButton>더 많은 프로젝트 보기</MoreButton>
-
-        <Pagination>
-          <PageNumber>1</PageNumber>
-          <PageNumber active>2</PageNumber>
-          <PageNumber>3</PageNumber>
-          <PageNumber>...</PageNumber>
-          <PageNumber>10</PageNumber>
-        </Pagination>
+        <Pagination>{renderPageNumbers()}</Pagination>
       </SectionContent>
     </SectionContainer>
   );
