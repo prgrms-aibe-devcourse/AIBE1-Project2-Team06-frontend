@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { useParams, useNavigate } from "react-router-dom";
 import { brandColors } from "../styles/GlobalStyle";
@@ -167,7 +167,103 @@ const Button = styled.button<{ primary?: boolean }>`
   }
 `;
 
-// 가상의 프로젝트 데이터 (실제로는 API에서 가져오거나 상태관리로 관리)
+// 팀원 관리 스타일 컴포넌트
+const TeamSection = styled.div`
+  margin-bottom: 40px;
+`;
+
+const TeamSearchContainer = styled.div`
+  margin-bottom: 20px;
+`;
+
+const SearchInput = styled.input`
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  width: 300px;
+  margin-right: 10px;
+
+  &:focus {
+    outline: none;
+    border-color: ${brandColors.primary};
+  }
+`;
+
+const SearchButton = styled.button`
+  padding: 10px 16px;
+  border-radius: 8px;
+  background-color: ${brandColors.primary};
+  color: white;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${brandColors.primaryDark};
+  }
+`;
+
+const SaveButton = styled(Button)`
+  margin-top: 16px;
+  margin-bottom: 30px;
+`;
+
+const TeamMemberTag = styled(Tag)`
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+`;
+
+const RemoveButton = styled.span`
+  margin-left: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: bold;
+
+  &:hover {
+    color: #ff4444;
+  }
+`;
+
+const SearchResults = styled.div`
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  display: ${(props) => (props.hidden ? "none" : "block")};
+`;
+
+const SearchResultItem = styled.div`
+  padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #f8f8f8;
+  }
+`;
+
+// 가상의 사용자 데이터 (실제로는 API에서 가져옴)
+const mockUsers = [
+  { id: "1", nickname: "서주원", email: "juwon@example.com" },
+  { id: "2", nickname: "nanOsilver", email: "nano@example.com" },
+  { id: "3", nickname: "jungmyung16", email: "jungmyung@example.com" },
+  { id: "4", nickname: "홍창욱", email: "chang@example.com" },
+  { id: "5", nickname: "김시용", email: "siyong@example.com" },
+  { id: "6", nickname: "홍창욱", email: "hong@example.com" },
+];
+
+// 프로젝트 데이터에 팀원 정보 추가
 const projectData = {
   id: "1",
   title: "[절찬리 모집] 기존 SNS문화를 바꾸고 싶다면 지원해주세요!",
@@ -179,6 +275,7 @@ const projectData = {
   deadline: "2025.05.16",
   duration: "4개월",
   tech_stack: ["React", "TypeScript", "Node.js", "MongoDB"],
+  team_members: ["서주원", "홍창욱"],
   description: `딥톡이라는 SNS를 왜 만들려고 하나요?
 
 
@@ -215,11 +312,79 @@ X(트위터)를 활용해서 트위터 문화에 맞는 마케팅을 할 수 있
 const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchResults, setSearchResults] = useState<typeof mockUsers>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<string[]>(
+    projectData.team_members || []
+  );
+  const searchRef = useRef<HTMLDivElement>(null);
 
-  // 실제 구현 시에는 id를 이용해 프로젝트 데이터를 가져오는 로직 추가
+  // 검색 결과 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  // 닉네임 검색 함수
+  const searchMembers = () => {
+    if (searchKeyword.trim() === "") {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    const filtered = mockUsers.filter(
+      (user) =>
+        user.nickname.toLowerCase().includes(searchKeyword.toLowerCase()) &&
+        !teamMembers.includes(user.nickname)
+    );
+
+    setSearchResults(filtered);
+    setShowResults(true);
+  };
+
+  // 엔터 키 처리
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      searchMembers();
+    }
+  };
+
+  // 팀원 추가
+  const addTeamMember = (nickname: string) => {
+    if (!teamMembers.includes(nickname)) {
+      setTeamMembers([...teamMembers, nickname]);
+    }
+    setSearchKeyword("");
+    setSearchResults([]);
+    setShowResults(false);
+  };
+
+  // 팀원 제거
+  const removeTeamMember = (nickname: string) => {
+    setTeamMembers(teamMembers.filter((member) => member !== nickname));
+  };
+
+  // 팀원 저장 (실제로는 API 호출)
+  const saveTeamMembers = () => {
+    // API 호출 로직 추가 예정
+    alert(`팀원 변경사항이 저장되었습니다: ${teamMembers.join(", ")}`);
   };
 
   return (
@@ -282,6 +447,50 @@ const ProjectDetailPage: React.FC = () => {
           </InfoRow>
         </div>
       </InfoTable>
+
+      <TeamSection>
+        <SectionTitle>팀원 관리</SectionTitle>
+        <div ref={searchRef}>
+          <TeamSearchContainer>
+            <SearchInput
+              type="text"
+              placeholder="닉네임으로 팀원 검색..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <SearchButton onClick={searchMembers}>검색</SearchButton>
+
+            <SearchResults hidden={!showResults || searchResults.length === 0}>
+              {searchResults.map((user) => (
+                <SearchResultItem
+                  key={user.id}
+                  onClick={() => addTeamMember(user.nickname)}
+                >
+                  {user.nickname} ({user.email})
+                </SearchResultItem>
+              ))}
+            </SearchResults>
+          </TeamSearchContainer>
+        </div>
+
+        <div>
+          {teamMembers.map((member, index) => (
+            <TeamMemberTag key={index}>
+              {member}
+              <RemoveButton onClick={() => removeTeamMember(member)}>
+                ×
+              </RemoveButton>
+            </TeamMemberTag>
+          ))}
+        </div>
+
+        {teamMembers.length > 0 && (
+          <SaveButton primary onClick={saveTeamMembers}>
+            팀원 정보 저장
+          </SaveButton>
+        )}
+      </TeamSection>
 
       <ContentSection>
         <SectionTitle>프로젝트 소개</SectionTitle>

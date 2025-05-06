@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#ffffff" />
+  <!-- 흙/화분 -->
+  <rect x="80" y="376" width="352" height="96" rx="24" fill="#A04000" />
+  
+  <!-- 줄기 -->
+  <path d="M256 376L256 280" stroke="#3A9D23" stroke-width="24" stroke-linecap="round" />
+  
+  <!-- 잎 -->
+  <path d="M184 240C184 240 208 280 256 280C304 280 320 240 360 200C400 160 360 96 304 120C272 136 256 176 256 200" fill="#2ECC71" />
+  <path d="M320 240C320 240 296 280 256 280C216 280 200 240 160 200C120 160 160 96 216 120C248 136 256 176 256 200" fill="#27AE60" />
+</svg> 
