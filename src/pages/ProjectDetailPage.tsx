@@ -253,6 +253,109 @@ const SearchResultItem = styled.div`
   }
 `;
 
+// 피어리뷰 스타일 컴포넌트
+const PeerReviewSection = styled.div`
+  margin-bottom: 40px;
+`;
+
+const ReviewForm = styled.div`
+  background-color: #f9f9f9;
+  padding: 24px;
+  border-radius: 12px;
+  margin-top: 20px;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 20px;
+`;
+
+const Label = styled.label`
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 15px;
+`;
+
+const Select = styled.select`
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+
+  &:focus {
+    outline: none;
+    border-color: ${brandColors.primary};
+  }
+`;
+
+const RatingGroup = styled.div`
+  margin-bottom: 16px;
+`;
+
+const RatingLabel = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  span:first-child {
+    font-weight: 500;
+  }
+
+  span:last-child {
+    color: #666;
+    font-size: 14px;
+  }
+`;
+
+const RatingContainer = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const RatingOption = styled.button<{ selected?: boolean }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid ${(props) => (props.selected ? "transparent" : "#ddd")};
+  background-color: ${(props) =>
+    props.selected ? brandColors.primary : "white"};
+  color: ${(props) => (props.selected ? "white" : "#333")};
+  font-weight: ${(props) => (props.selected ? "600" : "normal")};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${(props) =>
+      props.selected ? brandColors.primary : "#f0f0f0"};
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  min-height: 120px;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: ${brandColors.primary};
+  }
+`;
+
+const SubmitButton = styled(Button)`
+  margin-top: 16px;
+`;
+
 // 가상의 사용자 데이터 (실제로는 API에서 가져옴)
 const mockUsers = [
   { id: "1", nickname: "서주원", email: "juwon@example.com" },
@@ -318,6 +421,17 @@ const ProjectDetailPage: React.FC = () => {
     projectData.team_members || []
   );
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // 피어리뷰 상태
+  const [selectedTeamMember, setSelectedTeamMember] = useState<string>("");
+  const [collaborationRating, setCollaborationRating] = useState<number | null>(
+    null
+  );
+  const [technicalRating, setTechnicalRating] = useState<number | null>(null);
+  const [reCollaborationRating, setReCollaborationRating] = useState<
+    number | null
+  >(null);
+  const [reviewComment, setReviewComment] = useState<string>("");
 
   // 검색 결과 외부 클릭 시 닫기
   useEffect(() => {
@@ -385,6 +499,54 @@ const ProjectDetailPage: React.FC = () => {
     // API 호출 로직 추가 예정
     alert(`팀원 변경사항이 저장되었습니다: ${teamMembers.join(", ")}`);
   };
+
+  // 피어리뷰 제출
+  const handleReviewSubmit = () => {
+    if (!selectedTeamMember) {
+      alert("평가할 팀원을 선택해주세요.");
+      return;
+    }
+
+    if (
+      collaborationRating === null ||
+      technicalRating === null ||
+      reCollaborationRating === null
+    ) {
+      alert("모든 평가 항목을 선택해주세요.");
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      alert("리뷰 코멘트를 입력해주세요.");
+      return;
+    }
+
+    // 리뷰 데이터 생성
+    const reviewData = {
+      teamMember: selectedTeamMember,
+      ratings: {
+        collaboration: collaborationRating,
+        technical: technicalRating,
+        reCollaboration: reCollaborationRating,
+      },
+      comment: reviewComment,
+    };
+
+    // 실제로는 API를 호출하여 서버에 리뷰 데이터 저장
+    console.log("리뷰 데이터:", reviewData);
+    alert(`${selectedTeamMember}님에 대한 피어 리뷰가 제출되었습니다.`);
+
+    // 폼 초기화
+    setSelectedTeamMember("");
+    setCollaborationRating(null);
+    setTechnicalRating(null);
+    setReCollaborationRating(null);
+    setReviewComment("");
+  };
+
+  // 숫자 범위 배열 생성 함수
+  const rangeArray = (start: number, end: number) =>
+    Array.from({ length: end - start + 1 }, (_, i) => start + i);
 
   return (
     <PageContainer>
@@ -490,6 +652,106 @@ const ProjectDetailPage: React.FC = () => {
           </SaveButton>
         )}
       </TeamSection>
+
+      <PeerReviewSection>
+        <SectionTitle>피어 리뷰 작성</SectionTitle>
+        <ReviewForm>
+          <FormGroup>
+            <Label>리뷰 대상 선택</Label>
+            <Select
+              value={selectedTeamMember}
+              onChange={(e) => setSelectedTeamMember(e.target.value)}
+            >
+              <option value="">평가할 팀원을 선택하세요</option>
+              {teamMembers.map((member, index) => (
+                <option key={index} value={member}>
+                  {member}
+                </option>
+              ))}
+            </Select>
+          </FormGroup>
+
+          <FormGroup>
+            <Label>평가 항목</Label>
+
+            <RatingGroup>
+              <RatingLabel>
+                <span>협업 태도</span>
+                <span>
+                  평가:{" "}
+                  {collaborationRating !== null ? collaborationRating : "-"}/5
+                </span>
+              </RatingLabel>
+              <RatingContainer>
+                {rangeArray(0, 5).map((rating) => (
+                  <RatingOption
+                    key={rating}
+                    selected={collaborationRating === rating}
+                    onClick={() => setCollaborationRating(rating)}
+                  >
+                    {rating}
+                  </RatingOption>
+                ))}
+              </RatingContainer>
+            </RatingGroup>
+
+            <RatingGroup>
+              <RatingLabel>
+                <span>기술 기여도</span>
+                <span>
+                  평가: {technicalRating !== null ? technicalRating : "-"}/5
+                </span>
+              </RatingLabel>
+              <RatingContainer>
+                {rangeArray(0, 5).map((rating) => (
+                  <RatingOption
+                    key={rating}
+                    selected={technicalRating === rating}
+                    onClick={() => setTechnicalRating(rating)}
+                  >
+                    {rating}
+                  </RatingOption>
+                ))}
+              </RatingContainer>
+            </RatingGroup>
+
+            <RatingGroup>
+              <RatingLabel>
+                <span>다시 함께 하고 싶은지 여부</span>
+                <span>
+                  평가:{" "}
+                  {reCollaborationRating !== null ? reCollaborationRating : "-"}
+                  /5
+                </span>
+              </RatingLabel>
+              <RatingContainer>
+                {rangeArray(0, 5).map((rating) => (
+                  <RatingOption
+                    key={rating}
+                    selected={reCollaborationRating === rating}
+                    onClick={() => setReCollaborationRating(rating)}
+                  >
+                    {rating}
+                  </RatingOption>
+                ))}
+              </RatingContainer>
+            </RatingGroup>
+          </FormGroup>
+
+          <FormGroup>
+            <Label>리뷰 코멘트</Label>
+            <TextArea
+              placeholder="팀원에 대한 솔직한 피드백을 작성해주세요."
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
+            />
+          </FormGroup>
+
+          <SubmitButton primary onClick={handleReviewSubmit}>
+            리뷰 제출하기
+          </SubmitButton>
+        </ReviewForm>
+      </PeerReviewSection>
 
       <ContentSection>
         <SectionTitle>프로젝트 소개</SectionTitle>
