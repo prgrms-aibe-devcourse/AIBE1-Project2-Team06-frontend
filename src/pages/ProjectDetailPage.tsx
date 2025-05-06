@@ -274,7 +274,7 @@ const projectData = {
   deadline: "2025.05.16",
   duration: "4개월",
   tech_stack: ["React", "TypeScript", "Node.js", "MongoDB"],
-  team_members: ["서주원", "홍창욱"],
+  team_members: ["서주원", "송창욱"],
   description: `딥톡이라는 SNS를 왜 만들려고 하나요?
 
 
