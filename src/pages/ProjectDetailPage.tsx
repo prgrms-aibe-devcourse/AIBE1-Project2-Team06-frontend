@@ -258,9 +258,8 @@ const mockUsers = [
   { id: "1", nickname: "서주원", email: "juwon@example.com" },
   { id: "2", nickname: "nanOsilver", email: "nano@example.com" },
   { id: "3", nickname: "jungmyung16", email: "jungmyung@example.com" },
-  { id: "4", nickname: "홍창욱", email: "chang@example.com" },
+  { id: "4", nickname: "송창욱", email: "chang@example.com" },
   { id: "5", nickname: "김시용", email: "siyong@example.com" },
-  { id: "6", nickname: "홍창욱", email: "hong@example.com" },
 ];
 
 // 프로젝트 데이터에 팀원 정보 추가
