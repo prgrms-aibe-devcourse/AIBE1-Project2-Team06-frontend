@@ -240,6 +240,7 @@ const RecruitFormPage: React.FC = () => {
 
   const [selectedStacks, setSelectedStacks] = useState<string[]>([]);
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+  const [contactType, setContactType] = useState<string>("오픈톡");
 
   // 입력값 변경 핸들러
   const handleChange = (
@@ -396,17 +397,26 @@ const RecruitFormPage: React.FC = () => {
           </Column>
           <Column>
             <Label>연락 방법</Label>
-            <Select name="contact" value={form.contact} onChange={handleChange}>
-              <option>카카오톡/메일</option>
-              <option>카카오톡</option>
-              <option>메일</option>
-              <option>기타</option>
+            <Select
+              name="contact"
+              value={contactType}
+              onChange={(e) => setContactType(e.target.value)}
+            >
+              <option value="오픈톡">오픈톡</option>
+              <option value="이메일">이메일</option>
+              <option value="구글폼">구글폼</option>
             </Select>
             <Input
               name="openChat"
               value={form.openChat}
               onChange={handleChange}
-              placeholder="링크"
+              placeholder={
+                contactType === "오픈톡"
+                  ? "오픈 카톡방 링크"
+                  : contactType === "이메일"
+                  ? "이메일 주소"
+                  : "구글 폼 주소"
+              }
               style={{ marginTop: 8 }}
             />
           </Column>
