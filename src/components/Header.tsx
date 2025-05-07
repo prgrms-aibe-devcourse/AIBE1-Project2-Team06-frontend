@@ -128,16 +128,15 @@ const Header: React.FC = () => {
             <Logo>Eum</Logo>
           </Link>
           <Navigation>
-            <Link to="/projects">
+            {/* <Link to="/projects">
               <NavItem>프로젝트</NavItem>
-            </Link>
+            </Link> */}
             <Link to="/teams">
               <NavItem>팀원 모집</NavItem>
             </Link>
-            <Link to="/community">
+            {/* <Link to="/community">
               <NavItem>커뮤니티</NavItem>
-            </Link>
-
+            </Link> */}
             {isLoggedIn ? (
               <ProfileIcon onClick={handleProfileClick}>
                 <svg
