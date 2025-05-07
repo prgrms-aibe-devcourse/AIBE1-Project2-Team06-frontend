@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
 import { brandColors } from "../styles/GlobalStyle";
 
 // 페이지 컨테이너
@@ -726,10 +726,12 @@ const ProjectDetailPage: React.FC = () => {
       <TitleSection>
         <Title>{projectData.title}</Title>
         <MetaInfo>
-          <Author>
-            <AuthorAvatar>🧑</AuthorAvatar>
-            <AuthorName>{projectData.author}</AuthorName>
-          </Author>
+          <RouterLink to="/mypage" style={{ textDecoration: "none" }}>
+            <Author style={{ cursor: "pointer" }}>
+              <AuthorAvatar>🧑</AuthorAvatar>
+              <AuthorName>{projectData.author}</AuthorName>
+            </Author>
+          </RouterLink>
           <Date>{projectData.date}</Date>
         </MetaInfo>
       </TitleSection>

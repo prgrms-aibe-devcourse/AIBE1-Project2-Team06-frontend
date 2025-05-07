@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 interface ProjectCardProps {
   title: string;
@@ -7,6 +8,7 @@ interface ProjectCardProps {
   techStack: string[];
   recruitmentStatus: string;
   thumbnail?: string;
+  author: string;
 }
 
 const CardContainer = styled.div`
@@ -113,12 +115,40 @@ const StatusBadge = styled.div<{ status: string }>`
   }};
 `;
 
+const AuthorRow = styled.div`
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+const AuthorAvatar = styled.div`
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #666;
+`;
+const AuthorName = styled.span`
+  font-size: 14px;
+  color: #3498db;
+  font-weight: 500;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const ProjectCard: React.FC<ProjectCardProps> = ({
   title,
   description,
   techStack,
   recruitmentStatus,
   thumbnail,
+  author,
 }) => {
   return (
     <CardContainer>
@@ -134,6 +164,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <StatusBadge status={recruitmentStatus}>
           {recruitmentStatus}
         </StatusBadge>
+        <AuthorRow>
+          <Link
+            to="/mypage"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <AuthorAvatar>🧑</AuthorAvatar>
+            <AuthorName>{author}</AuthorName>
+          </Link>
+        </AuthorRow>
       </ContentContainer>
     </CardContainer>
   );

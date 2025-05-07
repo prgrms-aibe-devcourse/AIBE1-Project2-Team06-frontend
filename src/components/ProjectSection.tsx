@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 // import { FaThumbsUp } from 'react-icons/fa';
 // import { GoComment } from 'react-icons/go';
 
@@ -334,10 +334,16 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
         </CardFilter>
         <CardDivider />
         <CardFooter>
-          <AuthorInfo>
-            <AuthorAvatar>😺</AuthorAvatar>
-            <AuthorName>Blue Cat</AuthorName>
-          </AuthorInfo>
+          <Link
+            to="/mypage"
+            style={{ textDecoration: "none" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AuthorInfo style={{ cursor: "pointer" }}>
+              <AuthorAvatar>😺</AuthorAvatar>
+              <AuthorName>Blue Cat</AuthorName>
+            </AuthorInfo>
+          </Link>
           <CardStats>
             <StatItem>
               👍
