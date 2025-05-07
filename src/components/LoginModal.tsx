@@ -8,7 +8,6 @@ const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;
 const KAKAO_REDIRECT_URI =
   process.env.REACT_APP_KAKAO_REDIRECT_URI ||
   "http://localhost:3000/auth/kakao/callback";
-const KAKAO_AUTH_URL = "https://kauth.kakao.com/oauth/authorize";
 
 // 모달 배경
 const ModalOverlay = styled.div`

@@ -228,38 +228,6 @@ const StatItem = styled.div`
   gap: 4px;
 `;
 
-const StatusBadge = styled.div<{ status: string }>`
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  background-color: ${(props) => {
-    switch (props.status) {
-      case "모집중":
-        return "#e6f7ee";
-      case "모집완료":
-        return "#ffe9e9";
-      case "진행중":
-        return "#fff7e6";
-      default:
-        return "#eee";
-    }
-  }};
-  color: ${(props) => {
-    switch (props.status) {
-      case "모집중":
-        return "#27ae60";
-      case "모집완료":
-        return "#e74c3c";
-      case "진행중":
-        return "#f39c12";
-      default:
-        return "#666";
-    }
-  }};
-`;
-
 const Pagination = styled.div`
   display: flex;
   justify-content: center;
