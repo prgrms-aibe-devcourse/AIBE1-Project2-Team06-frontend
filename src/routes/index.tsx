@@ -2,14 +2,16 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import KakaoCallback from "../components/OAuth/KakaoCallback";
-import MyPage from "../pages/MyPage";
+import SettingPage from "../pages/SettingPage";
 import ProjectDetailPage from "../pages/ProjectDetailPage";
+import MyPage from "../pages/MyPage";
 
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
+      <Route path="/settings" element={<SettingPage />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/project/:id" element={<ProjectDetailPage />} />
       {/* 추후 추가될 라우트들 */}

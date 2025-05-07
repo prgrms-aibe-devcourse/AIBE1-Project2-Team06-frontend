@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 
-// 전체 컨테이너
+// 페이지 컨테이너
 const PageContainer = styled.div`
   max-width: 440px;
   margin: 32px auto 40px;
@@ -57,204 +56,57 @@ const WelcomeMessage = styled.h1`
   text-align: center;
 `;
 
-// 입력 필드 컨테이너
-const FormField = styled.div`
-  margin-bottom: 20px;
-  width: 100%;
-`;
-
-// 필드 라벨
-const Label = styled.label`
-  display: block;
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: 500;
-
-  &::after {
-    content: " *";
-    color: #e74c3c;
-  }
-`;
-
-// 텍스트 입력
-const TextInput = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-
-  &:focus {
-    outline: none;
-    border-color: #3498db;
-  }
-`;
-
-// 드롭다운 컨테이너
-const SelectContainer = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-// 드롭다운 선택
-const Select = styled.div`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-
-  &:after {
-    content: ">";
-    transform: rotate(90deg);
-    color: #999;
-  }
-`;
-
-// 드롭다운 메뉴
-const DropdownMenu = styled.div<{ isOpen: boolean }>`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
+// 정보 섹션
+const InfoSection = styled.div`
   background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-top: 4px;
-  z-index: 10;
-  display: ${(props) => (props.isOpen ? "block" : "none")};
+  border-radius: 12px;
+  padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
-// 드롭다운 아이템
-const DropdownItem = styled.div`
-  padding: 12px 16px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #f5f5f5;
-  }
-`;
-
-// 라디오 버튼 그룹
-const RadioGroup = styled.div`
-  display: flex;
-  align-items: center;
-  margin-top: 4px;
-`;
-
-// 라디오 옵션
-const RadioOption = styled.div`
-  display: flex;
-  align-items: center;
-  margin-right: 16px;
-`;
-
-// 라디오 버튼 커스텀 스타일링
-const RadioButton = styled.input`
-  margin-right: 4px;
-`;
-
-// 텍스트 영역
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  min-height: 100px;
-  resize: none;
-
-  &:focus {
-    outline: none;
-    border-color: #3498db;
-  }
-`;
-
-// 태그 선택 영역
-const TagsSection = styled.div`
+// 정보 행
+const InfoRow = styled.div`
   margin-bottom: 20px;
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
-// 태그 목록 컨테이너
+// 정보 라벨
+const InfoLabel = styled.div`
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+`;
+
+// 정보 값
+const InfoValue = styled.div`
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+`;
+
+// 태그 컨테이너
 const TagsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
-  margin-bottom: 16px;
 `;
 
-// 선택된 태그
-const SelectedTag = styled.div`
+// 태그
+const Tag = styled.span`
   display: inline-flex;
   align-items: center;
   background-color: ${brandColors.primaryLight};
   color: ${brandColors.primaryText};
   padding: 4px 12px;
   border-radius: 20px;
-  margin-right: 8px;
-  margin-bottom: 8px;
   font-size: 14px;
 `;
 
-// 선택 가능한 태그
-const TagOption = styled.div<{ isSelected: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  background-color: ${(props) =>
-    props.isSelected ? brandColors.primaryLight : "#f5f5f5"};
-  color: ${(props) => (props.isSelected ? brandColors.primaryText : "#555")};
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  cursor: pointer;
-  border: ${(props) =>
-    props.isSelected
-      ? `1px solid ${brandColors.primary}`
-      : "1px solid transparent"};
-
-  &:hover {
-    background-color: ${(props) =>
-      props.isSelected ? brandColors.primaryLight : "#ebebeb"};
-  }
-`;
-
-// 태그 삭제 버튼
-const RemoveTag = styled.span`
-  margin-left: 6px;
-  cursor: pointer;
-  color: #999;
-`;
-
-// 태그 섹션 토글 버튼
-const ToggleTagsButton = styled.button`
-  background: none;
-  border: none;
-  color: ${brandColors.secondary};
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  margin-top: 8px;
-
-  &::before {
-    content: "${(props) => (props.className === "expanded" ? "−" : "+")}";
-    margin-right: 4px;
-    font-size: 16px;
-  }
-`;
-
-// 제출 버튼
-const SubmitButton = styled.button`
+// 수정 버튼
+const EditButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: ${brandColors.primary};
@@ -264,167 +116,305 @@ const SubmitButton = styled.button`
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  margin-bottom: 20px;
+  margin-top: 24px;
 
   &:hover {
     background-color: ${brandColors.primaryDark};
   }
 `;
 
-// 취소 링크
-const CancelLink = styled.div`
-  text-align: center;
-  color: #7f8c8d;
+// 프로젝트/스터디 섹션
+const ActivitySection = styled.div`
+  margin-top: 32px;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  position: relative;
+  padding-left: 16px;
+  font-family: "CookieRun-Regular", sans-serif;
+
+  &:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: ${brandColors.primary};
+    border-radius: 2px;
+  }
+`;
+
+const ActivityList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const ActivityCard = styled.div`
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const ActivityTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+`;
+
+const ActivityLink = styled.a`
+  color: ${brandColors.primary};
+  text-decoration: none;
   font-size: 14px;
-  cursor: pointer;
+  display: block;
+  margin-bottom: 12px;
 
   &:hover {
     text-decoration: underline;
   }
 `;
 
+const ReviewScore = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+`;
+
+const ScoreValue = styled.span`
+  color: ${brandColors.primary};
+  font-weight: 600;
+`;
+
+// 모달 스타일 컴포넌트
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+`;
+
+const ModalTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  line-height: 1;
+
+  &:hover {
+    color: #333;
+  }
+`;
+
+const ReviewList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const ReviewCard = styled.div`
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+`;
+
+const ReviewerInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+`;
+
+const ReviewerName = styled.span`
+  font-weight: 600;
+  color: #333;
+`;
+
+const ScoreGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const ScoreItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const ScoreLabel = styled.span`
+  font-size: 12px;
+  color: #666;
+`;
+
+const CommentSection = styled.div`
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+`;
+
+const CommentLabel = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+`;
+
+const CommentText = styled.p`
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+`;
+
+// 피어리뷰 데이터 타입 정의
+interface PeerReview {
+  reviewer: string;
+  collaborationScore: number;
+  technicalScore: number;
+  wantToWorkAgain: number;
+  averageScore: number;
+  comment: string;
+}
+
+interface PeerReviewData {
+  [key: string]: PeerReview[];
+}
+
+// 가상의 사용자 데이터 (실제로는 API에서 가져옴)
+const userData = {
+  email: "won@example.com",
+  nickname: "won",
+  position: "백엔드",
+  level: "1년",
+  introduction: "안녕하세요. 1년차 백엔드 개발자 won입니다.",
+  interests: ["Spring", "Java", "MySQL", "Docker"],
+};
+
+// 가상의 활동 데이터 (실제로는 API에서 가져옴)
+const activityData = {
+  projects: [
+    {
+      id: "1",
+      title: "딥톡 SNS 프로젝트",
+      link: "/project/1",
+      reviewScore: 4.5,
+    },
+    {
+      id: "2",
+      title: "포트폴리오 웹사이트",
+      link: "/project/2",
+      reviewScore: 4.8,
+    },
+  ],
+  studies: [
+    {
+      id: "1",
+      title: "React 스터디",
+      link: "/study/1",
+      reviewScore: 4.2,
+    },
+    {
+      id: "2",
+      title: "TypeScript 마스터",
+      link: "/study/2",
+      reviewScore: 4.7,
+    },
+  ],
+};
+
+// 가상의 피어리뷰 데이터 (실제로는 API에서 가져옴)
+const peerReviewData: PeerReviewData = {
+  "1": [
+    {
+      reviewer: "김개발",
+      collaborationScore: 4.5,
+      technicalScore: 4.8,
+      wantToWorkAgain: 4.7,
+      averageScore: 4.65,
+      comment:
+        "매우 적극적이고 책임감 있게 프로젝트에 참여했습니다. 기술적으로도 많은 기여를 해주셨습니다.",
+    },
+    {
+      reviewer: "이디자인",
+      collaborationScore: 4.2,
+      technicalScore: 4.0,
+      wantToWorkAgain: 4.3,
+      averageScore: 4.1,
+      comment:
+        "팀원들과의 소통이 원활했고, 적극적으로 의견을 제시해주셨습니다.",
+    },
+  ],
+  "2": [
+    {
+      reviewer: "박프론트",
+      collaborationScore: 4.7,
+      technicalScore: 4.9,
+      wantToWorkAgain: 4.8,
+      averageScore: 4.8,
+      comment: "기술적 역량이 뛰어나고, 팀원들을 잘 이끌어주셨습니다.",
+    },
+  ],
+};
+
 const MyPage: React.FC = () => {
-  const navigate = useNavigate();
+  const [selectedReview, setSelectedReview] = useState<{
+    type: "project" | "study";
+    id: string;
+    title: string;
+  } | null>(null);
 
-  // 상태 관리
-  const [nickname, setNickname] = useState("won");
-  const [position, setPosition] = useState("백엔드");
-  const [level, setLevel] = useState("1년");
-  const [introduction, setIntroduction] = useState(
-    "안녕하세요. 1년차 백엔드 개발자 won입니다."
-  );
-  const [tags, setTags] = useState<string[]>(["Spring"]);
-  const [showTagOptions, setShowTagOptions] = useState(false);
-
-  // 드롭다운 상태
-  const [isPositionOpen, setIsPositionOpen] = useState(false);
-  const [isLevelOpen, setIsLevelOpen] = useState(false);
-
-  // 직무 옵션
-  const positionOptions = [
-    "프론트엔드",
-    "백엔드",
-    "디자이너",
-    "IOS",
-    "안드로이드",
-    "데브옵스",
-    "PM",
-    "기획자",
-    "마케터",
-  ];
-
-  // 경력 옵션
-  const levelOptions = [
-    "0년",
-    "1년",
-    "2년",
-    "3년",
-    "4년",
-    "5년",
-    "6년",
-    "7년",
-    "8년",
-    "9년",
-    "10년 이상",
-  ];
-
-  // 관심분야 태그 목록
-  const tagOptions = [
-    "JavaScript",
-    "TypeScript",
-    "React",
-    "Vue",
-    "Nodejs",
-    "Spring",
-    "Java",
-    "Nextjs",
-    "Nestjs",
-    "Express",
-    "Go",
-    "C",
-    "Python",
-    "Django",
-    "Swift",
-    "Kotlin",
-    "MySQL",
-    "MongoDB",
-    "PHP",
-    "GraphQL",
-    "Firebase",
-    "ReactNative",
-    "Unity",
-    "Flutter",
-    "AWS",
-    "Kubernetes",
-    "Docker",
-    "Git",
-    "Figma",
-    "Zeplin",
-    "Jest",
-    "Svelte",
-  ];
-
-  // 드롭다운 바깥 클릭 감지를 위한 refs
-  const positionRef = useRef<HTMLDivElement>(null);
-  const levelRef = useRef<HTMLDivElement>(null);
-
-  // 선택한 프로필 공개 여부
-  const [isPublic, setIsPublic] = useState(true);
-
-  // 폼 제출 처리
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // 여기에 제출 로직 구현
-    alert("프로필이 업데이트되었습니다!");
-    // 프로필 저장 후 홈으로 이동
-    navigate("/");
+  const handleEditClick = () => {
+    // 설정 페이지로 이동
+    window.location.href = "/settings";
   };
 
-  // 태그 토글 (추가/제거)
-  const toggleTag = (tag: string) => {
-    if (tags.includes(tag)) {
-      setTags(tags.filter((t) => t !== tag));
-    } else {
-      setTags([...tags, tag]);
-    }
+  const handleReviewClick = (
+    type: "project" | "study",
+    id: string,
+    title: string
+  ) => {
+    setSelectedReview({ type, id, title });
   };
 
-  // 태그 삭제
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
-  };
-
-  // 드롭다운 바깥 클릭 감지를 위한 이벤트 핸들러
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        positionRef.current &&
-        !positionRef.current.contains(event.target as Node)
-      ) {
-        setIsPositionOpen(false);
-      }
-      if (
-        levelRef.current &&
-        !levelRef.current.contains(event.target as Node)
-      ) {
-        setIsLevelOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // 취소 처리
-  const handleCancel = () => {
-    // 사용자에게 확인
-    if (
-      window.confirm("변경 사항이 저장되지 않습니다. 홈으로 이동하시겠습니까?")
-    ) {
-      navigate("/");
-    }
+  const handleCloseModal = () => {
+    setSelectedReview(null);
   };
 
   return (
@@ -436,142 +426,134 @@ const MyPage: React.FC = () => {
           </svg>
           <Badge>K</Badge>
         </ProfileImage>
-        <WelcomeMessage>won님 환영해요.</WelcomeMessage>
+        <WelcomeMessage>{userData.nickname}님 환영해요.</WelcomeMessage>
       </ProfileSection>
 
-      <form onSubmit={handleSubmit}>
-        <FormField>
-          <Label htmlFor="nickname">닉네임</Label>
-          <TextInput
-            id="nickname"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
-        </FormField>
+      <InfoSection>
+        <InfoRow>
+          <InfoLabel>이메일</InfoLabel>
+          <InfoValue>{userData.email}</InfoValue>
+        </InfoRow>
 
-        <FormField>
-          <Label htmlFor="position">직무</Label>
-          <SelectContainer ref={positionRef}>
-            <Select onClick={() => setIsPositionOpen(!isPositionOpen)}>
-              {position}
-            </Select>
-            <DropdownMenu isOpen={isPositionOpen}>
-              {positionOptions.map((option) => (
-                <DropdownItem
-                  key={option}
-                  onClick={() => {
-                    setPosition(option);
-                    setIsPositionOpen(false);
-                  }}
-                >
-                  {option}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </SelectContainer>
-        </FormField>
+        <InfoRow>
+          <InfoLabel>닉네임</InfoLabel>
+          <InfoValue>{userData.nickname}</InfoValue>
+        </InfoRow>
 
-        <FormField>
-          <Label>소속</Label>
-          <RadioGroup>
-            <RadioOption>
-              <RadioButton
-                type="radio"
-                id="public"
-                name="visibility"
-                checked={isPublic}
-                onChange={() => setIsPublic(true)}
-              />
-              <label htmlFor="public">공개</label>
-            </RadioOption>
-            <RadioOption>
-              <RadioButton
-                type="radio"
-                id="private"
-                name="visibility"
-                checked={!isPublic}
-                onChange={() => setIsPublic(false)}
-              />
-              <label htmlFor="private">비공개</label>
-            </RadioOption>
-          </RadioGroup>
-          <TextInput
-            placeholder="소속을 입력해주세요(ex: 회사 직장, 대학 대학교...)"
-            style={{ marginTop: "8px" }}
-          />
-        </FormField>
+        <InfoRow>
+          <InfoLabel>직무</InfoLabel>
+          <InfoValue>{userData.position}</InfoValue>
+        </InfoRow>
 
-        <FormField>
-          <Label htmlFor="level">경력</Label>
-          <SelectContainer ref={levelRef}>
-            <Select onClick={() => setIsLevelOpen(!isLevelOpen)}>
-              {level}
-            </Select>
-            <DropdownMenu isOpen={isLevelOpen}>
-              {levelOptions.map((option) => (
-                <DropdownItem
-                  key={option}
-                  onClick={() => {
-                    setLevel(option);
-                    setIsLevelOpen(false);
-                  }}
-                >
-                  {option}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </SelectContainer>
-        </FormField>
+        <InfoRow>
+          <InfoLabel>경력</InfoLabel>
+          <InfoValue>{userData.level}</InfoValue>
+        </InfoRow>
 
-        <FormField>
-          <Label htmlFor="introduction">자기소개</Label>
-          <TextArea
-            id="introduction"
-            value={introduction}
-            onChange={(e) => setIntroduction(e.target.value)}
-          />
-        </FormField>
+        <InfoRow>
+          <InfoLabel>자기소개</InfoLabel>
+          <InfoValue>{userData.introduction}</InfoValue>
+        </InfoRow>
 
-        <TagsSection>
-          <Label>관심분야</Label>
+        <InfoRow>
+          <InfoLabel>관심분야</InfoLabel>
           <TagsContainer>
-            {tags.map((tag) => (
-              <SelectedTag key={tag}>
-                {tag} <RemoveTag onClick={() => removeTag(tag)}>×</RemoveTag>
-              </SelectedTag>
+            {userData.interests.map((interest, index) => (
+              <Tag key={index}>{interest}</Tag>
             ))}
           </TagsContainer>
+        </InfoRow>
+      </InfoSection>
 
-          <ToggleTagsButton
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowTagOptions(!showTagOptions);
-            }}
-            className={showTagOptions ? "expanded" : ""}
-            type="button"
-          >
-            {showTagOptions ? "관심분야 접기" : "관심분야 펼치기"}
-          </ToggleTagsButton>
+      <EditButton onClick={handleEditClick}>프로필 수정하기</EditButton>
 
-          {showTagOptions && (
-            <TagsContainer>
-              {tagOptions.map((option) => (
-                <TagOption
-                  key={option}
-                  isSelected={tags.includes(option)}
-                  onClick={() => toggleTag(option)}
-                >
-                  {option}
-                </TagOption>
-              ))}
-            </TagsContainer>
-          )}
-        </TagsSection>
+      <ActivitySection>
+        <SectionTitle>참여한 프로젝트</SectionTitle>
+        <ActivityList>
+          {activityData.projects.map((project) => (
+            <ActivityCard key={project.id}>
+              <ActivityTitle>{project.title}</ActivityTitle>
+              <ActivityLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleReviewClick("project", project.id, project.title);
+                }}
+              >
+                피어리뷰 상세보기
+              </ActivityLink>
+              <ReviewScore>
+                피어리뷰 평균 점수:{" "}
+                <ScoreValue>{project.reviewScore}/5</ScoreValue>
+              </ReviewScore>
+            </ActivityCard>
+          ))}
+        </ActivityList>
 
-        <SubmitButton type="submit">프로필 저장</SubmitButton>
-        <CancelLink onClick={handleCancel}>취소</CancelLink>
-      </form>
+        <SectionTitle>참여한 스터디</SectionTitle>
+        <ActivityList>
+          {activityData.studies.map((study) => (
+            <ActivityCard key={study.id}>
+              <ActivityTitle>{study.title}</ActivityTitle>
+              <ActivityLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleReviewClick("study", study.id, study.title);
+                }}
+              >
+                피어리뷰 상세보기
+              </ActivityLink>
+              <ReviewScore>
+                피어리뷰 평균 점수:{" "}
+                <ScoreValue>{study.reviewScore}/5</ScoreValue>
+              </ReviewScore>
+            </ActivityCard>
+          ))}
+        </ActivityList>
+      </ActivitySection>
+
+      {selectedReview && (
+        <ModalOverlay onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            <ModalTitle>{selectedReview.title} - 피어리뷰</ModalTitle>
+            <ReviewList>
+              {peerReviewData[selectedReview.id]?.map(
+                (review: PeerReview, index: number) => (
+                  <ReviewCard key={index}>
+                    <ReviewerInfo>
+                      <ReviewerName>{review.reviewer}</ReviewerName>
+                    </ReviewerInfo>
+                    <ScoreGrid>
+                      <ScoreItem>
+                        <ScoreLabel>협업 태도</ScoreLabel>
+                        <ScoreValue>{review.collaborationScore}/5</ScoreValue>
+                      </ScoreItem>
+                      <ScoreItem>
+                        <ScoreLabel>기술 기여도</ScoreLabel>
+                        <ScoreValue>{review.technicalScore}/5</ScoreValue>
+                      </ScoreItem>
+                      <ScoreItem>
+                        <ScoreLabel>평균 점수</ScoreLabel>
+                        <ScoreValue>{review.averageScore}/5</ScoreValue>
+                      </ScoreItem>
+                      <ScoreItem>
+                        <ScoreLabel>다시 함께하고 싶은지</ScoreLabel>
+                        <ScoreValue>{review.wantToWorkAgain}/5</ScoreValue>
+                      </ScoreItem>
+                    </ScoreGrid>
+                    <CommentSection>
+                      <CommentLabel>리뷰 코멘트</CommentLabel>
+                      <CommentText>{review.comment}</CommentText>
+                    </CommentSection>
+                  </ReviewCard>
+                )
+              )}
+            </ReviewList>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 };
