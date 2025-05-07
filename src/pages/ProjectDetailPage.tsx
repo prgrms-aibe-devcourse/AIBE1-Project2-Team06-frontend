@@ -145,8 +145,16 @@ const Content = styled.div`
 
 const ButtonGroup = styled.div`
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 12px;
   margin-top: 40px;
+  margin-bottom: 32px;
+`;
+
+const ButtonRightGroup = styled.div`
+  display: flex;
+  gap: 12px;
 `;
 
 const Button = styled.button<{ primary?: boolean }>`
@@ -356,6 +364,138 @@ const SubmitButton = styled(Button)`
   margin-top: 16px;
 `;
 
+// 컬처핏 모달 스타일
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+`;
+const ModalContent = styled.div`
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 28px 24px 28px;
+  width: 420px;
+  height: 380px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow-y: auto;
+`;
+const ModalTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: ${brandColors.primary};
+`;
+const ModalClose = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #888;
+  cursor: pointer;
+`;
+const Question = styled.div`
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 24px;
+`;
+const AnswerList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+`;
+const AnswerOption = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  cursor: pointer;
+`;
+const ModalButton = styled.button`
+  padding: 10px 28px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  background: ${brandColors.primary};
+  color: #fff;
+  cursor: pointer;
+  margin-top: 8px;
+  &:hover {
+    background: ${brandColors.primaryDark};
+  }
+`;
+
+const AnswerTextArea = styled.textarea`
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  resize: vertical;
+  margin-bottom: 32px;
+  &:focus {
+    outline: none;
+    border-color: ${brandColors.primary};
+  }
+`;
+
+const ModalButtonGroup = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+`;
+const ModalButtonLeft = styled(ModalButton)`
+  margin-top: 0;
+  margin-right: auto;
+`;
+const ModalButtonRight = styled(ModalButton)`
+  margin-top: 0;
+  margin-left: auto;
+`;
+
+const cultureFitQuestions = [
+  {
+    q: "당신은 어떤 협업 방식을 선호하나요?",
+    a: ["각자 역할이 명확하게 나뉜 분업형", "함께 논의하며 유연하게 진행"],
+  },
+  {
+    q: "마감일이 다가올 때 당신의 작업 스타일은 어떤가요?",
+    a: ["압박이 있어야 집중이 잘 된다", "미리미리 끝내놓는 편"],
+  },
+  {
+    q: "프로젝트 중 문제가 생기면 어떤 방식으로 해결하려 하나요?",
+    a: ["팀원들과 바로 논의하여 해결한다", "혼자 먼저 고민해보고 공유"],
+  },
+  {
+    q: "팀 내 소통에서 당신의 성향은?",
+    a: [
+      "자주 의견을 나누고 회의도 자주 있는 걸 선호",
+      "필요할 때만 소통하는 걸 선호",
+    ],
+  },
+  {
+    q: "팀원과 의견이 다를 때 어떤 편인가요?",
+    a: ["서로 타협점을 찾으려 한다", "내 주장을 끝까지 관철하려 한다"],
+  },
+  {
+    q: "당신은 어떤 방식의 업무 분배를 선호하나요?",
+    a: ["능력에 따라 효율적으로 배분", "동등하게 나누는 걸 선호"],
+  },
+];
+
 // 가상의 사용자 데이터 (실제로는 API에서 가져옴)
 const mockUsers = [
   { id: "1", nickname: "서주원", email: "juwon@example.com" },
@@ -411,6 +551,11 @@ X(트위터)를 활용해서 트위터 문화에 맞는 마케팅을 할 수 있
 프로젝트 경험이 없어도, 해당 제품을 발전시킬 수 있는 자신이 있고 딥톡이 타깃하고 있는 문화에 대해 이해가 높으시다면, 편하게 지원 부탁드립니다!`,
 };
 
+const TeamModalContent = styled(ModalContent)`
+  width: 440px;
+  height: 420px;
+`;
+
 const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -432,6 +577,15 @@ const ProjectDetailPage: React.FC = () => {
     number | null
   >(null);
   const [reviewComment, setReviewComment] = useState<string>("");
+
+  // 컬처핏 상태
+  const [isCultureFitOpen, setIsCultureFitOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isPeerReviewModalOpen, setIsPeerReviewModalOpen] = useState(false);
+  const [cultureStep, setCultureStep] = useState(0);
+  const [cultureAnswers, setCultureAnswers] = useState<(string | null)[]>(
+    Array(cultureFitQuestions.length).fill(null)
+  );
 
   // 검색 결과 외부 클릭 시 닫기
   useEffect(() => {
@@ -548,6 +702,25 @@ const ProjectDetailPage: React.FC = () => {
   const rangeArray = (start: number, end: number) =>
     Array.from({ length: end - start + 1 }, (_, i) => start + i);
 
+  // 컬처핏 답변 선택
+  const handleCultureAnswer = (answer: string) => {
+    const updated = [...cultureAnswers];
+    updated[cultureStep] = answer;
+    setCultureAnswers(updated);
+  };
+  // 컬처핏 제출
+  const handleCultureSubmit = () => {
+    setIsCultureFitOpen(false);
+    alert(
+      "컬처핏 답변이 제출되었습니다!\n" +
+        cultureFitQuestions
+          .map((q, i) => `${i + 1}. ${q.q}\n- ${cultureAnswers[i]}`)
+          .join("\n")
+    );
+    setCultureStep(0);
+    setCultureAnswers(Array(cultureFitQuestions.length).fill(null));
+  };
+
   return (
     <PageContainer>
       <TitleSection>
@@ -609,158 +782,233 @@ const ProjectDetailPage: React.FC = () => {
         </div>
       </InfoTable>
 
-      <TeamSection>
-        <SectionTitle>팀원 관리</SectionTitle>
-        <div ref={searchRef}>
-          <TeamSearchContainer>
-            <SearchInput
-              type="text"
-              placeholder="닉네임으로 팀원 검색..."
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <SearchButton onClick={searchMembers}>검색</SearchButton>
+      {/* 팀원 관리/피어리뷰 버튼 */}
+      <ButtonGroup>
+        <Button onClick={handleGoBack}>{"<"}</Button>
+        <ButtonRightGroup>
+          <Button onClick={() => setIsTeamModalOpen(true)}>팀원 관리</Button>
+          <Button onClick={() => setIsPeerReviewModalOpen(true)}>
+            피어리뷰 작성
+          </Button>
+          <Button primary onClick={() => setIsCultureFitOpen(true)}>
+            컬처핏 등록
+          </Button>
+        </ButtonRightGroup>
+      </ButtonGroup>
 
-            <SearchResults hidden={!showResults || searchResults.length === 0}>
-              {searchResults.map((user) => (
-                <SearchResultItem
-                  key={user.id}
-                  onClick={() => addTeamMember(user.nickname)}
+      {/* 팀원 관리 모달 */}
+      {isTeamModalOpen && (
+        <ModalOverlay onClick={() => setIsTeamModalOpen(false)}>
+          <TeamModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalClose onClick={() => setIsTeamModalOpen(false)}>
+              &times;
+            </ModalClose>
+            <SectionTitle>팀원 관리</SectionTitle>
+            <div ref={searchRef}>
+              <TeamSearchContainer>
+                <SearchInput
+                  type="text"
+                  placeholder="닉네임으로 팀원 검색..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                />
+                <SearchButton onClick={searchMembers}>검색</SearchButton>
+                <SearchResults
+                  hidden={!showResults || searchResults.length === 0}
                 >
-                  {user.nickname} ({user.email})
-                </SearchResultItem>
-              ))}
-            </SearchResults>
-          </TeamSearchContainer>
-        </div>
-
-        <div>
-          {teamMembers.map((member, index) => (
-            <TeamMemberTag key={index}>
-              {member}
-              <RemoveButton onClick={() => removeTeamMember(member)}>
-                ×
-              </RemoveButton>
-            </TeamMemberTag>
-          ))}
-        </div>
-
-        {teamMembers.length > 0 && (
-          <SaveButton primary onClick={saveTeamMembers}>
-            팀원 정보 저장
-          </SaveButton>
-        )}
-      </TeamSection>
-
-      <PeerReviewSection>
-        <SectionTitle>피어 리뷰 작성</SectionTitle>
-        <ReviewForm>
-          <FormGroup>
-            <Label>리뷰 대상 선택</Label>
-            <Select
-              value={selectedTeamMember}
-              onChange={(e) => setSelectedTeamMember(e.target.value)}
-            >
-              <option value="">평가할 팀원을 선택하세요</option>
+                  {searchResults.map((user) => (
+                    <SearchResultItem
+                      key={user.id}
+                      onClick={() => addTeamMember(user.nickname)}
+                    >
+                      {user.nickname} ({user.email})
+                    </SearchResultItem>
+                  ))}
+                </SearchResults>
+              </TeamSearchContainer>
+            </div>
+            <div>
               {teamMembers.map((member, index) => (
-                <option key={index} value={member}>
+                <TeamMemberTag key={index}>
                   {member}
-                </option>
+                  <RemoveButton onClick={() => removeTeamMember(member)}>
+                    ×
+                  </RemoveButton>
+                </TeamMemberTag>
               ))}
-            </Select>
-          </FormGroup>
+            </div>
+            {teamMembers.length > 0 && (
+              <SaveButton primary onClick={saveTeamMembers}>
+                팀원 정보 저장
+              </SaveButton>
+            )}
+          </TeamModalContent>
+        </ModalOverlay>
+      )}
 
-          <FormGroup>
-            <Label>평가 항목</Label>
-
-            <RatingGroup>
-              <RatingLabel>
-                <span>협업 태도</span>
-                <span>
-                  평가:{" "}
-                  {collaborationRating !== null ? collaborationRating : "-"}/5
-                </span>
-              </RatingLabel>
-              <RatingContainer>
-                {rangeArray(0, 5).map((rating) => (
-                  <RatingOption
-                    key={rating}
-                    selected={collaborationRating === rating}
-                    onClick={() => setCollaborationRating(rating)}
-                  >
-                    {rating}
-                  </RatingOption>
-                ))}
-              </RatingContainer>
-            </RatingGroup>
-
-            <RatingGroup>
-              <RatingLabel>
-                <span>기술 기여도</span>
-                <span>
-                  평가: {technicalRating !== null ? technicalRating : "-"}/5
-                </span>
-              </RatingLabel>
-              <RatingContainer>
-                {rangeArray(0, 5).map((rating) => (
-                  <RatingOption
-                    key={rating}
-                    selected={technicalRating === rating}
-                    onClick={() => setTechnicalRating(rating)}
-                  >
-                    {rating}
-                  </RatingOption>
-                ))}
-              </RatingContainer>
-            </RatingGroup>
-
-            <RatingGroup>
-              <RatingLabel>
-                <span>다시 함께 하고 싶은지 여부</span>
-                <span>
-                  평가:{" "}
-                  {reCollaborationRating !== null ? reCollaborationRating : "-"}
-                  /5
-                </span>
-              </RatingLabel>
-              <RatingContainer>
-                {rangeArray(0, 5).map((rating) => (
-                  <RatingOption
-                    key={rating}
-                    selected={reCollaborationRating === rating}
-                    onClick={() => setReCollaborationRating(rating)}
-                  >
-                    {rating}
-                  </RatingOption>
-                ))}
-              </RatingContainer>
-            </RatingGroup>
-          </FormGroup>
-
-          <FormGroup>
-            <Label>리뷰 코멘트</Label>
-            <TextArea
-              placeholder="팀원에 대한 솔직한 피드백을 작성해주세요."
-              value={reviewComment}
-              onChange={(e) => setReviewComment(e.target.value)}
-            />
-          </FormGroup>
-
-          <SubmitButton primary onClick={handleReviewSubmit}>
-            리뷰 제출하기
-          </SubmitButton>
-        </ReviewForm>
-      </PeerReviewSection>
+      {/* 피어리뷰 작성 모달 */}
+      {isPeerReviewModalOpen && (
+        <ModalOverlay onClick={() => setIsPeerReviewModalOpen(false)}>
+          <ModalContent
+            style={{ width: "600px", height: "540px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ModalClose onClick={() => setIsPeerReviewModalOpen(false)}>
+              &times;
+            </ModalClose>
+            <SectionTitle>피어 리뷰 작성</SectionTitle>
+            <ReviewForm>
+              <FormGroup>
+                <Label>리뷰 대상 선택</Label>
+                <Select
+                  value={selectedTeamMember}
+                  onChange={(e) => setSelectedTeamMember(e.target.value)}
+                >
+                  <option value="">평가할 팀원을 선택하세요</option>
+                  {teamMembers.map((member, index) => (
+                    <option key={index} value={member}>
+                      {member}
+                    </option>
+                  ))}
+                </Select>
+              </FormGroup>
+              <FormGroup>
+                <Label>평가 항목</Label>
+                <RatingGroup>
+                  <RatingLabel>
+                    <span>협업 태도</span>
+                    <span>
+                      평가:{" "}
+                      {collaborationRating !== null ? collaborationRating : "-"}
+                      /5
+                    </span>
+                  </RatingLabel>
+                  <RatingContainer>
+                    {rangeArray(0, 5).map((rating) => (
+                      <RatingOption
+                        key={rating}
+                        selected={collaborationRating === rating}
+                        onClick={() => setCollaborationRating(rating)}
+                      >
+                        {rating}
+                      </RatingOption>
+                    ))}
+                  </RatingContainer>
+                </RatingGroup>
+                <RatingGroup>
+                  <RatingLabel>
+                    <span>기술 기여도</span>
+                    <span>
+                      평가: {technicalRating !== null ? technicalRating : "-"}/5
+                    </span>
+                  </RatingLabel>
+                  <RatingContainer>
+                    {rangeArray(0, 5).map((rating) => (
+                      <RatingOption
+                        key={rating}
+                        selected={technicalRating === rating}
+                        onClick={() => setTechnicalRating(rating)}
+                      >
+                        {rating}
+                      </RatingOption>
+                    ))}
+                  </RatingContainer>
+                </RatingGroup>
+                <RatingGroup>
+                  <RatingLabel>
+                    <span>다시 함께 하고 싶은지 여부</span>
+                    <span>
+                      평가:{" "}
+                      {reCollaborationRating !== null
+                        ? reCollaborationRating
+                        : "-"}
+                      /5
+                    </span>
+                  </RatingLabel>
+                  <RatingContainer>
+                    {rangeArray(0, 5).map((rating) => (
+                      <RatingOption
+                        key={rating}
+                        selected={reCollaborationRating === rating}
+                        onClick={() => setReCollaborationRating(rating)}
+                      >
+                        {rating}
+                      </RatingOption>
+                    ))}
+                  </RatingContainer>
+                </RatingGroup>
+              </FormGroup>
+              <FormGroup>
+                <Label>리뷰 코멘트</Label>
+                <TextArea
+                  placeholder="팀원에 대한 솔직한 피드백을 작성해주세요."
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                />
+              </FormGroup>
+              <SubmitButton primary onClick={handleReviewSubmit}>
+                리뷰 제출하기
+              </SubmitButton>
+            </ReviewForm>
+          </ModalContent>
+        </ModalOverlay>
+      )}
 
       <ContentSection>
         <SectionTitle>프로젝트 소개</SectionTitle>
         <Content>{projectData.description}</Content>
       </ContentSection>
 
-      <ButtonGroup>
-        <Button onClick={handleGoBack}>목록으로</Button>
-      </ButtonGroup>
+      {/* 컬처핏 등록 모달 (기존과 동일) */}
+      {isCultureFitOpen && (
+        <ModalOverlay onClick={() => setIsCultureFitOpen(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalClose onClick={() => setIsCultureFitOpen(false)}>
+              &times;
+            </ModalClose>
+            <ModalTitle>컬처핏 등록</ModalTitle>
+            <Question>{cultureFitQuestions[cultureStep].q}</Question>
+            <AnswerTextArea
+              value={cultureAnswers[cultureStep] || ""}
+              onChange={(e) => handleCultureAnswer(e.target.value)}
+              placeholder="답변을 입력해주세요."
+            />
+            <ModalButtonGroup>
+              <ModalButtonLeft
+                type="button"
+                disabled={cultureStep === 0}
+                onClick={() => setCultureStep(cultureStep - 1)}
+              >
+                이전
+              </ModalButtonLeft>
+              {cultureStep < cultureFitQuestions.length - 1 ? (
+                <ModalButtonRight
+                  type="button"
+                  disabled={
+                    !cultureAnswers[cultureStep] ||
+                    !cultureAnswers[cultureStep]?.trim()
+                  }
+                  onClick={() => setCultureStep(cultureStep + 1)}
+                >
+                  다음
+                </ModalButtonRight>
+              ) : (
+                <ModalButtonRight
+                  type="button"
+                  disabled={
+                    !cultureAnswers[cultureStep] ||
+                    !cultureAnswers[cultureStep]?.trim()
+                  }
+                  onClick={handleCultureSubmit}
+                >
+                  제출
+                </ModalButtonRight>
+              )}
+            </ModalButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 };
