@@ -4,9 +4,12 @@ import { brandColors } from "../styles/GlobalStyle";
 
 // 페이지 컨테이너
 const PageContainer = styled.div`
-  max-width: 440px;
+  max-width: 1200px;
   margin: 32px auto 40px;
   padding: 0 20px;
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 32px;
 `;
 
 // 프로필 섹션
@@ -105,27 +108,17 @@ const Tag = styled.span`
   font-size: 14px;
 `;
 
-// 수정 버튼
-const EditButton = styled.button`
-  width: 100%;
-  padding: 14px;
-  background-color: ${brandColors.primary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 24px;
-
-  &:hover {
-    background-color: ${brandColors.primaryDark};
-  }
-`;
-
 // 프로젝트/스터디 섹션
 const ActivitySection = styled.div`
-  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+`;
+
+const ActivityColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 `;
 
 const SectionTitle = styled.h2`
@@ -173,12 +166,18 @@ const ActivityLink = styled.a`
   color: ${brandColors.primary};
   text-decoration: none;
   font-size: 14px;
-  display: block;
-  margin-bottom: 12px;
+  display: inline-block;
+  margin-right: 12px;
 
   &:hover {
     text-decoration: underline;
   }
+`;
+
+const LinkContainer = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
 `;
 
 const ReviewScore = styled.div`
@@ -335,12 +334,14 @@ const activityData = {
       title: "딥톡 SNS 프로젝트",
       link: "/project/1",
       reviewScore: 4.5,
+      projectLink: "https://github.com/team/deeptalk",
     },
     {
       id: "2",
       title: "포트폴리오 웹사이트",
       link: "/project/2",
       reviewScore: 4.8,
+      projectLink: "https://github.com/user/portfolio",
     },
   ],
   studies: [
@@ -349,12 +350,14 @@ const activityData = {
       title: "React 스터디",
       link: "/study/1",
       reviewScore: 4.2,
+      studyLink: "https://github.com/study/react-study",
     },
     {
       id: "2",
       title: "TypeScript 마스터",
       link: "/study/2",
       reviewScore: 4.7,
+      studyLink: "https://github.com/study/typescript-master",
     },
   ],
 };
@@ -400,11 +403,6 @@ const MyPage: React.FC = () => {
     title: string;
   } | null>(null);
 
-  const handleEditClick = () => {
-    // 설정 페이지로 이동
-    window.location.href = "/settings";
-  };
-
   const handleReviewClick = (
     type: "project" | "study",
     id: string,
@@ -419,98 +417,120 @@ const MyPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProfileSection>
-        <ProfileImage>
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="#FFE500">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-          </svg>
-          <Badge>K</Badge>
-        </ProfileImage>
-        <WelcomeMessage>{userData.nickname}님 환영해요.</WelcomeMessage>
-      </ProfileSection>
+      <div>
+        <ProfileSection>
+          <ProfileImage>
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="#FFE500">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+            </svg>
+            <Badge>K</Badge>
+          </ProfileImage>
+          <WelcomeMessage>{userData.nickname}님 환영해요.</WelcomeMessage>
+        </ProfileSection>
 
-      <InfoSection>
-        <InfoRow>
-          <InfoLabel>이메일</InfoLabel>
-          <InfoValue>{userData.email}</InfoValue>
-        </InfoRow>
+        <InfoSection>
+          <InfoRow>
+            <InfoLabel>이메일</InfoLabel>
+            <InfoValue>{userData.email}</InfoValue>
+          </InfoRow>
 
-        <InfoRow>
-          <InfoLabel>닉네임</InfoLabel>
-          <InfoValue>{userData.nickname}</InfoValue>
-        </InfoRow>
+          <InfoRow>
+            <InfoLabel>닉네임</InfoLabel>
+            <InfoValue>{userData.nickname}</InfoValue>
+          </InfoRow>
 
-        <InfoRow>
-          <InfoLabel>직무</InfoLabel>
-          <InfoValue>{userData.position}</InfoValue>
-        </InfoRow>
+          <InfoRow>
+            <InfoLabel>직무</InfoLabel>
+            <InfoValue>{userData.position}</InfoValue>
+          </InfoRow>
 
-        <InfoRow>
-          <InfoLabel>경력</InfoLabel>
-          <InfoValue>{userData.level}</InfoValue>
-        </InfoRow>
+          <InfoRow>
+            <InfoLabel>경력</InfoLabel>
+            <InfoValue>{userData.level}</InfoValue>
+          </InfoRow>
 
-        <InfoRow>
-          <InfoLabel>자기소개</InfoLabel>
-          <InfoValue>{userData.introduction}</InfoValue>
-        </InfoRow>
+          <InfoRow>
+            <InfoLabel>자기소개</InfoLabel>
+            <InfoValue>{userData.introduction}</InfoValue>
+          </InfoRow>
 
-        <InfoRow>
-          <InfoLabel>관심분야</InfoLabel>
-          <TagsContainer>
-            {userData.interests.map((interest, index) => (
-              <Tag key={index}>{interest}</Tag>
-            ))}
-          </TagsContainer>
-        </InfoRow>
-      </InfoSection>
-
-      <EditButton onClick={handleEditClick}>프로필 수정하기</EditButton>
+          <InfoRow>
+            <InfoLabel>관심분야</InfoLabel>
+            <TagsContainer>
+              {userData.interests.map((interest, index) => (
+                <Tag key={index}>{interest}</Tag>
+              ))}
+            </TagsContainer>
+          </InfoRow>
+        </InfoSection>
+      </div>
 
       <ActivitySection>
-        <SectionTitle>참여한 프로젝트</SectionTitle>
-        <ActivityList>
-          {activityData.projects.map((project) => (
-            <ActivityCard key={project.id}>
-              <ActivityTitle>{project.title}</ActivityTitle>
-              <ActivityLink
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleReviewClick("project", project.id, project.title);
-                }}
-              >
-                피어리뷰 상세보기
-              </ActivityLink>
-              <ReviewScore>
-                피어리뷰 평균 점수:{" "}
-                <ScoreValue>{project.reviewScore}/5</ScoreValue>
-              </ReviewScore>
-            </ActivityCard>
-          ))}
-        </ActivityList>
+        <ActivityColumn>
+          <SectionTitle>참여한 프로젝트</SectionTitle>
+          <ActivityList>
+            {activityData.projects.map((project) => (
+              <ActivityCard key={project.id}>
+                <ActivityTitle>{project.title}</ActivityTitle>
+                <LinkContainer>
+                  <ActivityLink
+                    href={project.projectLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    프로젝트 링크
+                  </ActivityLink>
+                  <ActivityLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleReviewClick("project", project.id, project.title);
+                    }}
+                  >
+                    피어리뷰 상세보기
+                  </ActivityLink>
+                </LinkContainer>
+                <ReviewScore>
+                  피어리뷰 평균 점수:{" "}
+                  <ScoreValue>{project.reviewScore}/5</ScoreValue>
+                </ReviewScore>
+              </ActivityCard>
+            ))}
+          </ActivityList>
+        </ActivityColumn>
 
-        <SectionTitle>참여한 스터디</SectionTitle>
-        <ActivityList>
-          {activityData.studies.map((study) => (
-            <ActivityCard key={study.id}>
-              <ActivityTitle>{study.title}</ActivityTitle>
-              <ActivityLink
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleReviewClick("study", study.id, study.title);
-                }}
-              >
-                피어리뷰 상세보기
-              </ActivityLink>
-              <ReviewScore>
-                피어리뷰 평균 점수:{" "}
-                <ScoreValue>{study.reviewScore}/5</ScoreValue>
-              </ReviewScore>
-            </ActivityCard>
-          ))}
-        </ActivityList>
+        <ActivityColumn>
+          <SectionTitle>참여한 스터디</SectionTitle>
+          <ActivityList>
+            {activityData.studies.map((study) => (
+              <ActivityCard key={study.id}>
+                <ActivityTitle>{study.title}</ActivityTitle>
+                <LinkContainer>
+                  <ActivityLink
+                    href={study.studyLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    스터디 링크
+                  </ActivityLink>
+                  <ActivityLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleReviewClick("study", study.id, study.title);
+                    }}
+                  >
+                    피어리뷰 상세보기
+                  </ActivityLink>
+                </LinkContainer>
+                <ReviewScore>
+                  피어리뷰 평균 점수:{" "}
+                  <ScoreValue>{study.reviewScore}/5</ScoreValue>
+                </ReviewScore>
+              </ActivityCard>
+            ))}
+          </ActivityList>
+        </ActivityColumn>
       </ActivitySection>
 
       {selectedReview && (
