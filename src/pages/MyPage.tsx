@@ -430,11 +430,6 @@ const MyPage: React.FC = () => {
 
         <InfoSection>
           <InfoRow>
-            <InfoLabel>이메일</InfoLabel>
-            <InfoValue>{userData.email}</InfoValue>
-          </InfoRow>
-
-          <InfoRow>
             <InfoLabel>닉네임</InfoLabel>
             <InfoValue>{userData.nickname}</InfoValue>
           </InfoRow>
