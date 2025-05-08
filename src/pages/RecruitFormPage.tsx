@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { useNavigate } from "react-router-dom";
 
 // 섹션 타이틀
 const SectionTitle = styled.h2`
@@ -168,6 +169,43 @@ const tagOptions = [
   "Jest",
   "Svelte",
 ];
+
+// 기술 스택 ID 매핑 객체
+const techStackIdMap: { [key: string]: number } = {
+  JavaScript: 1,
+  TypeScript: 2,
+  React: 3,
+  Vue: 4,
+  Nodejs: 5,
+  Spring: 6,
+  Java: 7,
+  Nextjs: 8,
+  Nestjs: 9,
+  Express: 10,
+  Go: 11,
+  C: 12,
+  Python: 13,
+  Django: 14,
+  Swift: 15,
+  Kotlin: 16,
+  MySQL: 17,
+  MongoDB: 18,
+  PHP: 19,
+  GraphQL: 20,
+  Firebase: 21,
+  ReactNative: 22,
+  Unity: 23,
+  Flutter: 24,
+  AWS: 25,
+  Kubernetes: 26,
+  Docker: 27,
+  Git: 28,
+  Figma: 29,
+  Zeplin: 30,
+  Jest: 31,
+  Svelte: 32,
+};
+
 const positionOptions = [
   "프론트엔드",
   "백엔드",
@@ -179,6 +217,49 @@ const positionOptions = [
   "기획자",
   "마케터",
 ];
+
+// 포지션 ID 매핑 객체
+const positionIdMap: { [key: string]: number } = {
+  프론트엔드: 1,
+  백엔드: 2,
+  디자이너: 3,
+  IOS: 4,
+  안드로이드: 5,
+  데브옵스: 6,
+  PM: 7,
+  기획자: 8,
+  마케터: 9,
+};
+
+// 진행 방식 enum 매핑
+const progressMethodMap: { [key: string]: string } = {
+  온라인: "ONLINE",
+  오프라인: "OFFLINE",
+  "온라인/오프라인": "ALL",
+};
+
+// 기간 enum 매핑
+const periodMap: { [key: string]: string } = {
+  "1개월": "MONTH_1",
+  "3개월": "MONTH_3",
+  "6개월": "MONTH_6",
+  "6개월 이상": "MONTH_6_MORE",
+  "기간 미정~6개월 이상": "MONTH_6_MORE",
+};
+
+// 연락 방법 enum 매핑
+const linkTypeMap: { [key: string]: string } = {
+  오픈톡: "KAKAO",
+  이메일: "EMAIL",
+  구글폼: "GOOGLE",
+};
+
+// 구분 enum 매핑
+const recruitTypeMap: { [key: string]: string } = {
+  스터디: "STUDY",
+  프로젝트: "PROJECT",
+  "스터디/프로젝트": "PROJECT",
+};
 
 const TagSelectContainer = styled.div`
   display: flex;
@@ -223,6 +304,7 @@ const RemoveTag = styled.span`
 
 // 메인 컴포넌트
 const RecruitFormPage: React.FC = () => {
+  const navigate = useNavigate();
   // 상태 관리 (실제 서비스에서는 useForm 등 라이브러리 사용 권장)
   const [form, setForm] = useState({
     type: "스터디/프로젝트",
@@ -241,6 +323,8 @@ const RecruitFormPage: React.FC = () => {
   const [selectedStacks, setSelectedStacks] = useState<string[]>([]);
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [contactType, setContactType] = useState<string>("오픈톡");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // 입력값 변경 핸들러
   const handleChange = (
@@ -271,10 +355,109 @@ const RecruitFormPage: React.FC = () => {
   };
 
   // 등록 버튼 클릭 핸들러
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 실제 등록 로직 구현
-    alert("등록되었습니다!");
+
+    // 필수 값 검증
+    if (!form.title.trim()) {
+      alert("제목을 입력해주세요.");
+      return;
+    }
+
+    if (!form.description.trim()) {
+      alert("내용을 입력해주세요.");
+      return;
+    }
+
+    if (!form.deadline) {
+      alert("모집 마감일을 선택해주세요.");
+      return;
+    }
+
+    if (selectedStacks.length === 0) {
+      alert("기술 스택을 하나 이상 선택해주세요.");
+      return;
+    }
+
+    if (selectedPositions.length === 0) {
+      alert("모집 포지션을 하나 이상 선택해주세요.");
+      return;
+    }
+
+    if (!form.openChat.trim()) {
+      alert("연락 방법을 입력해주세요.");
+      return;
+    }
+
+    // 인원 수 변환
+    let recruitMember = 0;
+    if (form.people === "인원 미정~10명 이상" || form.people === "10+") {
+      recruitMember = 10;
+    } else {
+      recruitMember = parseInt(form.people.replace("명", ""), 10);
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      // 기술 스택과 포지션 ID 변환
+      const techStackIds = selectedStacks.map((stack) => techStackIdMap[stack]);
+      const positionIds = selectedPositions.map(
+        (position) => positionIdMap[position]
+      );
+
+      // 서버로 보낼 데이터 준비
+      const postData = {
+        title: form.title,
+        content: form.description,
+        recruitType: recruitTypeMap[form.type] || "PROJECT",
+        recruitMember: recruitMember,
+        progressMethod: progressMethodMap[form.method] || "ALL",
+        period: periodMap[form.period] || "MONTH_6_MORE",
+        deadline: form.deadline,
+        linkType: linkTypeMap[contactType] || "KAKAO",
+        link: form.openChat,
+        techStackIds: techStackIds,
+        positionIds: positionIds,
+      };
+
+      // 토큰 가져오기
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        navigate("/");
+        return;
+      }
+
+      // API 요청
+      const response = await fetch("http://localhost:8080/api/v1/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-USER-ID": "1",
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("등록 성공:", result);
+
+      alert("등록이 완료되었습니다!");
+      // 등록 후 홈페이지로 이동
+      navigate("/");
+    } catch (err) {
+      console.error("등록 중 오류 발생:", err);
+      setError("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+      alert("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -446,11 +629,16 @@ const RecruitFormPage: React.FC = () => {
           />
         </HorizontalRow>
         <ButtonRow>
-          <Button type="button">취소</Button>
-          <Button type="submit" primary>
-            등록하기
+          <Button type="button" onClick={() => navigate("/teams")}>
+            취소
+          </Button>
+          <Button type="submit" primary disabled={isSubmitting}>
+            {isSubmitting ? "등록 중..." : "등록하기"}
           </Button>
         </ButtonRow>
+        {error && (
+          <div style={{ color: "red", marginTop: "10px" }}>{error}</div>
+        )}
       </form>
     </FormContainer>
   );
