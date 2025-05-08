@@ -54,7 +54,7 @@ const AuthorName = styled.span`
   font-weight: 500;
 `;
 
-const Date = styled.span`
+const DateText = styled.span`
   font-size: 14px;
   color: #777;
 `;
@@ -539,51 +539,36 @@ const mockUsers = [
   { id: "5", nickname: "김시용", email: "siyong@example.com" },
 ];
 
-// 프로젝트 데이터에 팀원 정보 추가
-const projectData = {
-  id: "1",
-  title: "[절찬리 모집] 기존 SNS문화를 바꾸고 싶다면 지원해주세요!",
-  author: "Jaeyeong",
-  date: "2025.05.02",
-  category: "프로젝트",
-  position: "인원 미정",
-  apply_method: "사이트 내정",
-  deadline: "2025.05.16",
-  duration: "4개월",
-  tech_stack: ["React", "TypeScript", "Node.js", "MongoDB"],
-  team_members: ["서주원", "송창욱"],
-  description: `딥톡이라는 SNS를 왜 만들려고 하나요?
+// 프로젝트 데이터 인터페이스
+interface TechStack {
+  id: number;
+  name: string;
+}
 
+interface Position {
+  id: number;
+  name: string;
+}
 
-오랜 기간 동안 기존 SNS의 문화와 맞지 않는 유저들을 포착해 왔고, 저 역시 현재 주류 SNS 문화에 대해서 염증을 많이 느껴 온 사람입니다. 저희 딥톡은 해당 제품으로 새로운 SNS 문화를 만들고, 이를 필요로 하는 사람들에게 좋은 안식처가 되려고 합니다.
-
-
-딥톡을 필요로 하는 사람은 누구일까요?
-
-
-현재 이야기를 하는 공간에서 충분한 안전함을 못 느끼는 유저
-자신이 올린 포스팅 글이 다른 SNS/커뮤니티에 무단으로 사용되는 경험을 겪은
-자신이 올린 글이 다른 유저들에게 무분별한 비난을 받거나, 조롱을 받았던 경험이 있는
-현재 사용하고 있는 SNS의 댓글, 인용, 글(콘텐츠)의 내용이 내가 지향하는 문화와 맞지 않는
-
-
-X(트위터)를 주로 사용하지만, X의 운영 방식에 동의를 하지 않는 유저
-음란물 등 유해할 수 있는 콘텐츠에 대한 X의 명백한 방치
-AI의 침범을 받고 싶지 않은
-AI 사용으로 인용, 댓글 등 기능에 대한 불편함
-
-
-딥톡이 찾고 있는 분
-
-
-X(트위터), 각종 커뮤니티를 깊게 사용해본 경험이 있고, 현재도 활발히 사용을 하고 있어요.
-저희 딥톡을 같이 날카롭게 기획하고 발전시킬 분이 필요해요.
-X(트위터)를 활용해서 트위터 문화에 맞는 마케팅을 할 수 있어요.
-프로젝트 경험이 없어도, 해당 제품을 발전시킬 수 있고 딥톡이 타켓하고 있는 문화에 대한 이해도가 높아요.
-
-
-프로젝트 경험이 없어도, 해당 제품을 발전시킬 수 있는 자신이 있고 딥톡이 타깃하고 있는 문화에 대해 이해가 높으시다면, 편하게 지원 부탁드립니다!`,
-};
+interface ProjectDetailData {
+  id: number;
+  userId: number;
+  title: string;
+  content: string;
+  recruitType: string; // "STUDY", "PROJECT"
+  recruitMember: number;
+  progressMethod: string; // "ONLINE", "OFFLINE", "ALL"
+  period: string; // "MONTH_1", "MONTH_3", "MONTH_6", "MONTH_6_MORE"
+  deadline: string;
+  linkType: string; // "KAKAO", "EMAIL", "GOOGLE"
+  link: string;
+  cultureFit: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  techStacks: TechStack[];
+  positions: Position[];
+}
 
 const TeamModalContent = styled(ModalContent)`
   width: 440px;
@@ -596,10 +581,13 @@ const ProjectDetailPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResults, setSearchResults] = useState<typeof mockUsers>([]);
   const [showResults, setShowResults] = useState(false);
-  const [teamMembers, setTeamMembers] = useState<string[]>(
-    projectData.team_members || []
-  );
+  const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [projectData, setProjectData] = useState<ProjectDetailData | null>(
+    null
+  );
 
   // 피어리뷰 상태
   const [selectedTeamMember, setSelectedTeamMember] = useState<string>("");
@@ -621,6 +609,45 @@ const ProjectDetailPage: React.FC = () => {
     Array(cultureFitQuestions.length).fill(null)
   );
 
+  // 프로젝트 데이터 가져오기
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(
+          `http://localhost:8080/api/v1/posts/${id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`서버 오류: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setProjectData(data);
+
+        // 팀원 정보 초기화 (실제로는 팀원 정보도 API에서 가져와야 함)
+        setTeamMembers([]);
+      } catch (err) {
+        console.error("프로젝트 데이터 로딩 중 오류:", err);
+        setError("프로젝트 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [id]);
+
   // 검색 결과 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -637,6 +664,77 @@ const ProjectDetailPage: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // 진행 방식 표시
+  const renderProgressMethod = (method: string) => {
+    switch (method) {
+      case "ONLINE":
+        return "온라인";
+      case "OFFLINE":
+        return "오프라인";
+      case "ALL":
+        return "온라인/오프라인";
+      default:
+        return "온라인/오프라인";
+    }
+  };
+
+  // 기간 표시
+  const renderPeriod = (period: string) => {
+    switch (period) {
+      case "MONTH_1":
+        return "1개월";
+      case "MONTH_3":
+        return "3개월";
+      case "MONTH_6":
+        return "6개월";
+      case "MONTH_6_MORE":
+        return "6개월 이상";
+      default:
+        return "기간 미정";
+    }
+  };
+
+  // 연락 방법 표시
+  const renderLinkType = (linkType: string) => {
+    switch (linkType) {
+      case "KAKAO":
+        return "오픈톡";
+      case "EMAIL":
+        return "이메일";
+      case "GOOGLE":
+        return "구글폼";
+      default:
+        return "오픈톡";
+    }
+  };
+
+  // 구분 표시
+  const renderRecruitType = (type: string) => {
+    switch (type) {
+      case "STUDY":
+        return "스터디";
+      case "PROJECT":
+        return "프로젝트";
+      default:
+        return "프로젝트";
+    }
+  };
+
+  // 날짜 포맷팅
+  const formatDate = (dateString: string) => {
+    try {
+      // JavaScript의 기본 Date 객체 사용
+      const jsDate = new Date(dateString);
+      return `${jsDate.getFullYear()}.${String(jsDate.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}.${String(jsDate.getDate()).padStart(2, "0")}`;
+    } catch (error) {
+      console.error("날짜 변환 오류:", error);
+      return dateString;
+    }
+  };
 
   const handleGoBack = () => {
     navigate(-1);
@@ -756,6 +854,27 @@ const ProjectDetailPage: React.FC = () => {
     setCultureAnswers(Array(cultureFitQuestions.length).fill(null));
   };
 
+  if (loading) {
+    return (
+      <PageContainer>
+        <div>로딩 중...</div>
+      </PageContainer>
+    );
+  }
+
+  if (error || !projectData) {
+    return (
+      <PageContainer>
+        <div>
+          {error || "프로젝트 정보를 불러오는데 실패했습니다."}
+          <Button onClick={handleGoBack} style={{ marginTop: "16px" }}>
+            뒤로 가기
+          </Button>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
       <TitleSection>
@@ -764,10 +883,10 @@ const ProjectDetailPage: React.FC = () => {
           <RouterLink to="/mypage" style={{ textDecoration: "none" }}>
             <Author style={{ cursor: "pointer" }}>
               <AuthorAvatar>🧑</AuthorAvatar>
-              <AuthorName>{projectData.author}</AuthorName>
+              <AuthorName>유저 {projectData.userId}</AuthorName>
             </Author>
           </RouterLink>
-          <Date>{projectData.date}</Date>
+          <DateText>{formatDate(projectData.createdAt)}</DateText>
         </MetaInfo>
       </TitleSection>
 
@@ -775,21 +894,23 @@ const ProjectDetailPage: React.FC = () => {
         <div>
           <InfoRow>
             <InfoLabel>모집 구분</InfoLabel>
-            <InfoValue>{projectData.category}</InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>프로젝트</InfoLabel>
-            <InfoValue>딥톡 SNS</InfoValue>
+            <InfoValue>{renderRecruitType(projectData.recruitType)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>모집 인원</InfoLabel>
-            <InfoValue>{projectData.position}</InfoValue>
+            <InfoValue>{projectData.recruitMember}명</InfoValue>
+          </InfoRow>
+          <InfoRow>
+            <InfoLabel>진행 방식</InfoLabel>
+            <InfoValue>
+              {renderProgressMethod(projectData.progressMethod)}
+            </InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>연락 방법</InfoLabel>
             <InfoValue>
-              <Link href="https://open.kakao.com" target="_blank">
-                오픈톡
+              <Link href={projectData.link} target="_blank">
+                {renderLinkType(projectData.linkType)}
               </Link>
             </InfoValue>
           </InfoRow>
@@ -798,7 +919,7 @@ const ProjectDetailPage: React.FC = () => {
         <div>
           <InfoRow>
             <InfoLabel>지원 방식</InfoLabel>
-            <InfoValue>{projectData.apply_method}</InfoValue>
+            <InfoValue>{renderLinkType(projectData.linkType)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>모집 마감</InfoLabel>
@@ -806,13 +927,21 @@ const ProjectDetailPage: React.FC = () => {
           </InfoRow>
           <InfoRow>
             <InfoLabel>예상 기간</InfoLabel>
-            <InfoValue>{projectData.duration}</InfoValue>
+            <InfoValue>{renderPeriod(projectData.period)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>사용 언어</InfoLabel>
             <InfoValue>
-              {projectData.tech_stack.map((tech, index) => (
-                <Tag key={index}>{tech}</Tag>
+              {projectData.techStacks.map((tech, index) => (
+                <Tag key={index}>{tech.name}</Tag>
+              ))}
+            </InfoValue>
+          </InfoRow>
+          <InfoRow>
+            <InfoLabel>모집 포지션</InfoLabel>
+            <InfoValue>
+              {projectData.positions.map((position, index) => (
+                <Tag key={index}>{position.name}</Tag>
               ))}
             </InfoValue>
           </InfoRow>
@@ -832,6 +961,11 @@ const ProjectDetailPage: React.FC = () => {
           </Button>
         </ButtonRightGroup>
       </ButtonGroup>
+
+      <ContentSection>
+        <SectionTitle>프로젝트 소개</SectionTitle>
+        <Content>{projectData.content}</Content>
+      </ContentSection>
 
       {/* 팀원 관리 모달 */}
       {isTeamModalOpen && (
@@ -991,11 +1125,6 @@ const ProjectDetailPage: React.FC = () => {
           </ModalContent>
         </ModalOverlay>
       )}
-
-      <ContentSection>
-        <SectionTitle>프로젝트 소개</SectionTitle>
-        <Content>{projectData.description}</Content>
-      </ContentSection>
 
       {/* 컬처핏 등록 모달 */}
       {isCultureFitOpen && (
