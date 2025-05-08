@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import LoginModal from "./LoginModal";
@@ -92,12 +92,43 @@ const Header: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // 로그인 상태 확인
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    setIsLoggedIn(!!token);
-  }, []);
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem("token");
+      if (!!token !== isLoggedIn) {
+        setIsLoggedIn(!!token);
+        console.log("로그인 상태 변경:", !!token);
+      }
+    };
+
+    // 페이지 접속 시마다 확인
+    checkLoginStatus();
+
+    // 로컬 스토리지 변경 이벤트 리스너 추가
+    window.addEventListener("storage", checkLoginStatus);
+
+    // 로그인 이벤트 처리
+    const handleLoginEvent = () => {
+      console.log("로그인 이벤트 감지");
+      checkLoginStatus();
+    };
+
+    // 커스텀 이벤트 리스너 추가
+    window.addEventListener("login-success", handleLoginEvent);
+
+    // 주기적으로 확인 (1초마다)
+    const intervalId = setInterval(checkLoginStatus, 1000);
+
+    // 컴포넌트가 언마운트될 때 이벤트 리스너와 인터벌 제거
+    return () => {
+      window.removeEventListener("storage", checkLoginStatus);
+      window.removeEventListener("login-success", handleLoginEvent);
+      clearInterval(intervalId);
+    };
+  }, [location.pathname, isLoggedIn]); // location과 로그인 상태 변경 시 확인
 
   const handleLoginClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -114,7 +145,7 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("token");
     setIsLoggedIn(false);
     setIsMenuOpen(false);
     navigate("/");
@@ -163,7 +194,12 @@ const Header: React.FC = () => {
 
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          // 모달이 닫힐 때 로그인 상태 다시 확인
+          const token = localStorage.getItem("token");
+          setIsLoggedIn(!!token);
+        }}
       />
     </>
   );

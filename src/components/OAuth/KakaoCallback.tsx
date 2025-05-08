@@ -104,7 +104,9 @@ const KakaoCallback = () => {
           provider: "kakao",
         };
 
-        const response = await fetch("/api/v1/login", {
+        const API_BASE_URL =
+          process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+        const response = await fetch(`${API_BASE_URL}/api/v1/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -117,12 +119,25 @@ const KakaoCallback = () => {
         }
 
         const data = await response.json();
+        console.log("서버 응답 데이터:", data); // 디버깅용 로그
 
         // 로그인 성공 처리
-        if (data.accessToken) {
-          localStorage.setItem("accessToken", data.accessToken);
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+
+          // 커스텀 이벤트 발생 - 로그인 성공 알림
+          const loginEvent = new Event("login-success");
+          window.dispatchEvent(loginEvent);
+
           setStatus("로그인 성공! 리디렉션 중...");
-          setTimeout(() => navigate("/", { replace: true }), 1500);
+          setTimeout(() => {
+            // 홈페이지로 이동할 때도 이벤트 발생
+            navigate("/", { replace: true });
+            // 약간의 지연 후 다시 한번 이벤트 발생 (안전장치)
+            setTimeout(() => {
+              window.dispatchEvent(new Event("login-success"));
+            }, 300);
+          }, 1500);
         } else {
           setIsError(true);
           setErrorMessage("로그인 처리 중 오류가 발생했습니다. (토큰 없음)");
