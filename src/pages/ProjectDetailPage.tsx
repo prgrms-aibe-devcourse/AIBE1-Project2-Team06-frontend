@@ -381,8 +381,8 @@ const ModalContent = styled.div`
   background: #fff;
   border-radius: 12px;
   padding: 32px 28px 24px 28px;
-  width: 420px;
-  height: 380px;
+  width: 480px;
+  max-height: 520px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow-y: auto;
@@ -404,9 +404,17 @@ const ModalClose = styled.button`
   cursor: pointer;
 `;
 const Question = styled.div`
+  margin-bottom: 8px;
+`;
+const QuestionTitle = styled.div`
   font-size: 17px;
   font-weight: 600;
-  margin-bottom: 24px;
+  margin-bottom: 4px;
+`;
+const QuestionSubtitle = styled.div`
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 16px;
 `;
 const AnswerList = styled.div`
   display: flex;
@@ -414,12 +422,27 @@ const AnswerList = styled.div`
   gap: 12px;
   margin-bottom: 32px;
 `;
-const AnswerOption = styled.label`
+const AnswerOption = styled.label<{ selected?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid
+    ${(props) => (props.selected ? brandColors.primary : "#ddd")};
+  background-color: ${(props) =>
+    props.selected ? `${brandColors.primaryLight}30` : "white"};
   font-size: 15px;
   cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${(props) =>
+      props.selected ? `${brandColors.primaryLight}30` : "#f8f8f8"};
+  }
+`;
+const RadioInput = styled.input`
+  margin-right: 12px;
+  accent-color: ${brandColors.primary};
 `;
 const ModalButton = styled.button`
   padding: 10px 28px;
@@ -435,22 +458,6 @@ const ModalButton = styled.button`
     background: ${brandColors.primaryDark};
   }
 `;
-
-const AnswerTextArea = styled.textarea`
-  width: 100%;
-  min-height: 80px;
-  padding: 10px 14px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-  resize: vertical;
-  margin-bottom: 32px;
-  &:focus {
-    outline: none;
-    border-color: ${brandColors.primary};
-  }
-`;
-
 const ModalButtonGroup = styled.div`
   display: flex;
   justify-content: space-between;
@@ -468,31 +475,58 @@ const ModalButtonRight = styled(ModalButton)`
 
 const cultureFitQuestions = [
   {
-    q: "당신은 어떤 협업 방식을 선호하나요?",
-    a: ["각자 역할이 명확하게 나뉜 분업형", "함께 논의하며 유연하게 진행"],
-  },
-  {
-    q: "마감일이 다가올 때 당신의 작업 스타일은 어떤가요?",
-    a: ["압박이 있어야 집중이 잘 된다", "미리미리 끝내놓는 편"],
-  },
-  {
-    q: "프로젝트 중 문제가 생기면 어떤 방식으로 해결하려 하나요?",
-    a: ["팀원들과 바로 논의하여 해결한다", "혼자 먼저 고민해보고 공유"],
-  },
-  {
-    q: "팀 내 소통에서 당신의 성향은?",
+    q: "1. 협업 스타일",
+    subq: "당신은 어떤 협업 방식을 선호하나요?",
     a: [
-      "자주 의견을 나누고 회의도 자주 있는 걸 선호",
-      "필요할 때만 소통하는 걸 선호",
+      "혼자 일한 후 결과를 공유하는 방식",
+      "함께 브레인스토밍하고 의견을 자주 나누는 방식",
+      "각자 역할이 명확하게 나뉜 분업형",
     ],
   },
   {
-    q: "팀원과 의견이 다를 때 어떤 편인가요?",
-    a: ["서로 타협점을 찾으려 한다", "내 주장을 끝까지 관철하려 한다"],
+    q: "2. 일정과 마감에 대한 태도",
+    subq: "마감일이 다가올 때 당신의 작업 스타일은 어떤가요?",
+    a: [
+      "미리 계획하고 일찍 끝내려고 한다",
+      "적절히 분배하며 마감일을 맞춘다",
+      "압박이 있어야 집중이 잘 된다",
+    ],
   },
   {
-    q: "당신은 어떤 방식의 업무 분배를 선호하나요?",
-    a: ["능력에 따라 효율적으로 배분", "동등하게 나누는 걸 선호"],
+    q: "3. 문제 발생 시 대처 방식",
+    subq: "프로젝트 중 문제가 생기면 어떤 방식으로 해결하려 하나요?",
+    a: [
+      "먼저 스스로 고민한 뒤 해결책을 공유한다",
+      "팀원들과 바로 논의하여 해결한다",
+      "리더나 책임자에게 먼저 알린다",
+    ],
+  },
+  {
+    q: "4. 의사소통 방식",
+    subq: "팀 내 소통에서 당신의 성향은?",
+    a: [
+      "자주 의견을 나누고 회의도 자주 있는 걸 선호",
+      "필요한 경우에만 간결히 소통",
+      "비동기(댓글, 슬랙 등) 중심의 소통을 선호",
+    ],
+  },
+  {
+    q: "5. 갈등 상황에서의 태도",
+    subq: "팀원과 의견이 다를 때 어떤 편인가요?",
+    a: [
+      "설득하거나 내 의견을 끝까지 관철하려 한다",
+      "서로 타협점을 찾으려 한다",
+      "조용히 수긍하고 따른다",
+    ],
+  },
+  {
+    q: "6. 업무 분배에 대한 생각",
+    subq: "당신은 어떤 방식의 업무 분배를 선호하나요?",
+    a: [
+      "능력에 따라 효율적으로 배분",
+      "모두가 고르게 분담",
+      "자발적으로 맡고 싶은 일을 고르게 한다",
+    ],
   },
 ];
 
@@ -708,6 +742,7 @@ const ProjectDetailPage: React.FC = () => {
     updated[cultureStep] = answer;
     setCultureAnswers(updated);
   };
+
   // 컬처핏 제출
   const handleCultureSubmit = () => {
     setIsCultureFitOpen(false);
@@ -962,7 +997,7 @@ const ProjectDetailPage: React.FC = () => {
         <Content>{projectData.description}</Content>
       </ContentSection>
 
-      {/* 컬처핏 등록 모달 (기존과 동일) */}
+      {/* 컬처핏 등록 모달 */}
       {isCultureFitOpen && (
         <ModalOverlay onClick={() => setIsCultureFitOpen(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -970,12 +1005,31 @@ const ProjectDetailPage: React.FC = () => {
               &times;
             </ModalClose>
             <ModalTitle>컬처핏 등록</ModalTitle>
-            <Question>{cultureFitQuestions[cultureStep].q}</Question>
-            <AnswerTextArea
-              value={cultureAnswers[cultureStep] || ""}
-              onChange={(e) => handleCultureAnswer(e.target.value)}
-              placeholder="답변을 입력해주세요."
-            />
+            <Question>
+              <QuestionTitle>
+                {cultureFitQuestions[cultureStep].q}
+              </QuestionTitle>
+              <QuestionSubtitle>
+                {cultureFitQuestions[cultureStep].subq}
+              </QuestionSubtitle>
+            </Question>
+            <AnswerList>
+              {cultureFitQuestions[cultureStep].a.map((answer, index) => (
+                <AnswerOption
+                  key={index}
+                  selected={cultureAnswers[cultureStep] === answer}
+                  onClick={() => handleCultureAnswer(answer)}
+                >
+                  <RadioInput
+                    type="radio"
+                    name={`question-${cultureStep}`}
+                    checked={cultureAnswers[cultureStep] === answer}
+                    onChange={() => handleCultureAnswer(answer)}
+                  />
+                  {answer}
+                </AnswerOption>
+              ))}
+            </AnswerList>
             <ModalButtonGroup>
               <ModalButtonLeft
                 type="button"
@@ -987,10 +1041,7 @@ const ProjectDetailPage: React.FC = () => {
               {cultureStep < cultureFitQuestions.length - 1 ? (
                 <ModalButtonRight
                   type="button"
-                  disabled={
-                    !cultureAnswers[cultureStep] ||
-                    !cultureAnswers[cultureStep]?.trim()
-                  }
+                  disabled={!cultureAnswers[cultureStep]}
                   onClick={() => setCultureStep(cultureStep + 1)}
                 >
                   다음
@@ -998,10 +1049,7 @@ const ProjectDetailPage: React.FC = () => {
               ) : (
                 <ModalButtonRight
                   type="button"
-                  disabled={
-                    !cultureAnswers[cultureStep] ||
-                    !cultureAnswers[cultureStep]?.trim()
-                  }
+                  disabled={!cultureAnswers[cultureStep]}
                   onClick={handleCultureSubmit}
                 >
                   제출
