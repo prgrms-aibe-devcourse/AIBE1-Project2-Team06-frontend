@@ -261,23 +261,30 @@ const PageNumber = styled.button<{ active?: boolean }>`
 interface ProjectCardItemProps {
   id: number;
   title: string;
-  description: string;
-  techStack: string[];
-  recruitmentStatus: string;
-  category: string;
-  date?: string;
+  description?: string;
+  techStacks?: { id: number; name: string }[];
+  positions?: { id: number; name: string }[];
+  recruitType: string;
+  deadline?: string;
+  period?: string;
+  progressMethod?: string;
 }
 
 const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
   id,
   title,
   description,
-  techStack,
-  recruitmentStatus,
-  category,
-  date = "마감일 | 2025.05.13",
+  techStacks = [],
+  positions = [],
+  recruitType,
+  deadline,
+  period,
+  progressMethod,
 }) => {
   const navigate = useNavigate();
+  const formattedDeadline = deadline
+    ? `마감일 | ${deadline.split("-").join(".")}`
+    : "";
 
   const handleClick = () => {
     navigate(`/project/${id}`);
@@ -286,19 +293,18 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
   return (
     <ProjectCardWrapper onClick={handleClick}>
       <CardHeader>
-        <TagCategory>👨‍💻 프로젝트</TagCategory>
-        {category === "스터디" && (
-          <TagEducation>🎓 따끈따끈 새 글</TagEducation>
-        )}
+        <TagCategory>
+          {recruitType === "PROJECT" ? "👨‍💻 프로젝트" : "🎓 스터디"}
+        </TagCategory>
         <HandIcon>🌱</HandIcon>
       </CardHeader>
       <CardContent>
-        <CardDate>{date}</CardDate>
+        <CardDate>{formattedDeadline}</CardDate>
         <CardTitle>{title}</CardTitle>
         <CardFilter>
-          <FilterButton>전체</FilterButton>
-          {category === "프로젝트" && <FilterButton>iOS</FilterButton>}
-          {category === "프로젝트" && <FilterButton>디자이너</FilterButton>}
+          {positions.slice(0, 3).map((position, index) => (
+            <FilterButton key={index}>{position.name}</FilterButton>
+          ))}
         </CardFilter>
         <CardDivider />
         <CardFooter>
@@ -328,209 +334,107 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
   );
 };
 
+// 프로젝트 API 응답 타입 정의
+interface TechStack {
+  id: number;
+  name: string;
+}
+
+interface Position {
+  id: number;
+  name: string;
+}
+
+interface Post {
+  id: number;
+  userId: number;
+  title: string;
+  content: string;
+  recruitType: string;
+  recruitMember: number;
+  progressMethod: string;
+  period: string;
+  deadline: string;
+  linkType: string;
+  link: string;
+  cultureFit: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  techStacks: TechStack[];
+  positions: Position[];
+}
+
+interface PostResponse {
+  content: Post[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+  };
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+  first: boolean;
+  empty: boolean;
+}
+
 const ProjectSection: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState("전체");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState<string>("전체");
+  const [currentPage, setCurrentPage] = useState<number>(0); // API에서는 0부터 시작
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const projectsPerPage = 8;
 
-  // 예시 데이터
-  const projects = [
-    {
-      id: 1,
-      title: "마음운동 앱 사이드 프로젝트 팀원 모집합니다(iOS 개발자 모집)",
-      description:
-        "개발자들이 서로 지식과 경험을 공유하고 함께 성장할 수 있는 커뮤니티 플랫폼을 개발합니다.",
-      techStack: ["React", "TypeScript", "Node.js"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 2,
-      title: "헬스케어 모바일 앱 서비스",
-      description:
-        "사용자의 건강 정보를 관리하고 맞춤형 운동 계획을 제공하는 모바일 앱을 개발합니다.",
-      techStack: ["React Native", "Firebase", "Redux"],
-      recruitmentStatus: "모집완료",
-      category: "프로젝트",
-    },
-    {
-      id: 3,
-      title: "간편 결제 시스템 개발",
-      description:
-        "사용하기 쉬운 결제 시스템과 관리자 대시보드를 제공하는 서비스를 개발합니다.",
-      techStack: ["Vue.js", "Spring Boot", "MySQL"],
-      recruitmentStatus: "진행중",
-      category: "프로젝트",
-    },
-    {
-      id: 4,
-      title: "실시간 협업 툴",
-      description:
-        "팀원들이 실시간으로 협업할 수 있는 문서 편집 및 프로젝트 관리 툴입니다.",
-      techStack: ["Angular", "Socket.io", "MongoDB"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 5,
-      title: "인공지능 기반 추천 시스템",
-      description:
-        "사용자의 취향과 패턴을 분석하여 맞춤형 콘텐츠를 추천하는 시스템을 개발합니다.",
-      techStack: ["Python", "TensorFlow", "Django"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 6,
-      title: "동네 기반 중고거래 서비스",
-      description:
-        "위치 기반으로 가까운 동네에서 안전하게 중고 물품을 거래할 수 있는 서비스를 개발합니다.",
-      techStack: ["Swift", "Kotlin", "AWS"],
-      recruitmentStatus: "진행중",
-      category: "스터디",
-    },
-    {
-      id: 7,
-      title: "React 심화 스터디",
-      description:
-        "React 고급 기능과 최적화 기법을 함께 학습하는 스터디입니다.",
-      techStack: ["React", "JavaScript", "Redux"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 8,
-      title: "알고리즘 문제 풀이 스터디",
-      description: "코딩 테스트 준비를 위한 알고리즘 문제 풀이 스터디입니다.",
-      techStack: ["Python", "Java", "C++"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 9,
-      title: "웹 퍼포먼스 최적화 스터디",
-      description: "웹 성능 최적화를 위한 다양한 기법을 학습하는 스터디입니다.",
-      techStack: ["JavaScript", "React", "Webpack"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 10,
-      title: "UI/UX 디자인 멘토링",
-      description:
-        "실무 디자이너의 멘토링을 통해 UI/UX 역량을 키우는 프로그램입니다.",
-      techStack: ["Figma", "Adobe XD", "Sketch"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 11,
-      title: "오픈소스 기여 프로젝트",
-      description:
-        "인기 오픈소스 프로젝트에 기여하는 경험을 쌓는 팀 프로젝트입니다.",
-      techStack: ["Git", "GitHub", "Linux"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 12,
-      title: "머신러닝 기초 스터디",
-      description:
-        "머신러닝의 기초 개념부터 실습까지 함께 학습하는 스터디입니다.",
-      techStack: ["Python", "TensorFlow", "PyTorch"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 13,
-      title: "모바일 앱 개발 프로젝트",
-      description:
-        "다양한 플랫폼에서 작동하는 모바일 앱을 개발하는 프로젝트입니다.",
-      techStack: ["Flutter", "Firebase", "Dart"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 14,
-      title: "DevOps 핵심 툴 학습",
-      description:
-        "현대적인 DevOps 도구들을 배우고 실무에 적용하는 방법을 학습합니다.",
-      techStack: ["Docker", "Kubernetes", "Jenkins"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 15,
-      title: "블록체인 기반 서비스 개발",
-      description:
-        "블록체인 기술을 활용한 실용적인 서비스를 개발하는 프로젝트입니다.",
-      techStack: ["Solidity", "Web3.js", "Ethereum"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 16,
-      title: "웹 접근성 향상 스터디",
-      description:
-        "모두가 이용할 수 있는 웹을 위한 접근성 향상 방법을 공부합니다.",
-      techStack: ["HTML", "CSS", "ARIA"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 17,
-      title: "클라우드 아키텍처 설계",
-      description:
-        "확장 가능한 클라우드 기반 시스템 아키텍처를 설계하는 프로젝트입니다.",
-      techStack: ["AWS", "Azure", "GCP"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 18,
-      title: "게임 개발 입문 스터디",
-      description: "게임 개발의 기초를 배우고 간단한 게임을 함께 만들어봅니다.",
-      techStack: ["Unity", "C#", "2D Graphics"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-    {
-      id: 19,
-      title: "데이터 시각화 프로젝트",
-      description: "복잡한 데이터를 이해하기 쉽게 시각화하는 프로젝트입니다.",
-      techStack: ["D3.js", "Tableau", "R"],
-      recruitmentStatus: "모집중",
-      category: "프로젝트",
-    },
-    {
-      id: 20,
-      title: "사이버 보안 스터디",
-      description: "웹과 네트워크 보안에 대한 개념과 실무 기술을 학습합니다.",
-      techStack: ["Network", "Linux", "Penetration Testing"],
-      recruitmentStatus: "모집중",
-      category: "스터디",
-    },
-  ];
+  // API로부터 프로젝트 데이터 가져오기
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
 
-  const filteredProjects = projects.filter((project) => {
-    if (activeCategory !== "전체" && project.category !== activeCategory) {
-      return false;
+      let url = `http://localhost:8080/api/v1/posts?page=${currentPage}&size=${projectsPerPage}`;
+
+      // 카테고리 필터링이 필요한 경우 URL 수정
+      if (activeCategory !== "전체") {
+        const recruitType = activeCategory === "프로젝트" ? "PROJECT" : "STUDY";
+        url += `&recruitType=${recruitType}`;
+      }
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("서버에서 데이터를 가져오는데 실패했습니다.");
+      }
+
+      const data: PostResponse = await response.json();
+      setPosts(data.content);
+      setTotalPages(data.totalPages);
+    } catch (error) {
+      console.error("프로젝트 데이터를 가져오는 중 오류 발생:", error);
+      // 오류 발생 시 빈 배열로 초기화
+      setPosts([]);
+    } finally {
+      setIsLoading(false);
     }
-    return true;
-  });
+  };
 
-  // 페이징 처리
-  const indexOfLastProject = currentPage * projectsPerPage;
-  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
-  const currentProjects = filteredProjects.slice(
-    indexOfFirstProject,
-    indexOfLastProject
-  );
-  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+  // 페이지 또는 카테고리 변경 시 데이터 가져오기
+  useEffect(() => {
+    fetchPosts();
+  }, [currentPage, activeCategory]);
+
+  // 카테고리 변경 시 페이지를 0으로 리셋
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [activeCategory]);
 
   // 페이지 변경 함수
   const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
+    setCurrentPage(pageNumber - 1); // API는 0부터 시작하므로 1을 빼줌
     // 페이지 상단으로 스크롤
     window.scrollTo({
       top: document.getElementById("project-section")?.offsetTop || 0,
@@ -543,13 +447,16 @@ const ProjectSection: React.FC = () => {
     const pageNumbers = [];
     const maxPageDisplay = 5;
 
+    // API에서 페이지는 0부터 시작하지만, UI에서는 1부터 시작하므로 조정
+    const displayCurrentPage = currentPage + 1;
+
     if (totalPages <= maxPageDisplay) {
       // 페이지가 5개 이하면 모든 페이지 번호 표시
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(
           <PageNumber
             key={i}
-            active={i === currentPage}
+            active={i === displayCurrentPage}
             onClick={() => handlePageChange(i)}
           >
             {i}
@@ -565,7 +472,7 @@ const ProjectSection: React.FC = () => {
       pageNumbers.push(
         <PageNumber
           key={1}
-          active={1 === currentPage}
+          active={1 === displayCurrentPage}
           onClick={() => handlePageChange(1)}
         >
           1
@@ -573,11 +480,11 @@ const ProjectSection: React.FC = () => {
       );
 
       // 현재 페이지가 4보다 크면 "..." 표시
-      if (currentPage > 3) {
+      if (displayCurrentPage > 3) {
         pageNumbers.push(
           <PageNumber
             key="ellipsis1"
-            onClick={() => handlePageChange(Math.floor(currentPage / 2))}
+            onClick={() => handlePageChange(Math.floor(displayCurrentPage / 2))}
           >
             ...
           </PageNumber>
@@ -585,8 +492,8 @@ const ProjectSection: React.FC = () => {
       }
 
       // 현재 페이지 주변의 페이지 표시
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
+      const startPage = Math.max(2, displayCurrentPage - 1);
+      const endPage = Math.min(totalPages - 1, displayCurrentPage + 1);
 
       for (let i = startPage; i <= endPage; i++) {
         if (i !== 1 && i !== totalPages) {
@@ -594,7 +501,7 @@ const ProjectSection: React.FC = () => {
           pageNumbers.push(
             <PageNumber
               key={i}
-              active={i === currentPage}
+              active={i === displayCurrentPage}
               onClick={() => handlePageChange(i)}
             >
               {i}
@@ -604,12 +511,14 @@ const ProjectSection: React.FC = () => {
       }
 
       // 현재 페이지가 totalPages-3보다 작으면 "..." 표시
-      if (currentPage < totalPages - 2) {
+      if (displayCurrentPage < totalPages - 2) {
         pageNumbers.push(
           <PageNumber
             key="ellipsis2"
             onClick={() =>
-              handlePageChange(Math.floor((currentPage + totalPages) / 2))
+              handlePageChange(
+                Math.floor((displayCurrentPage + totalPages) / 2)
+              )
             }
           >
             ...
@@ -621,7 +530,7 @@ const ProjectSection: React.FC = () => {
       pageNumbers.push(
         <PageNumber
           key={totalPages}
-          active={totalPages === currentPage}
+          active={totalPages === displayCurrentPage}
           onClick={() => handlePageChange(totalPages)}
         >
           {totalPages}
@@ -631,11 +540,6 @@ const ProjectSection: React.FC = () => {
 
     return pageNumbers;
   };
-
-  // 카테고리 변경 시 페이지를 1로 리셋
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory]);
 
   return (
     <SectionContainer id="project-section">
@@ -668,21 +572,34 @@ const ProjectSection: React.FC = () => {
           </CategoryTab>
         </CategoryTabs>
 
-        <CardsGrid>
-          {currentProjects.map((project) => (
-            <ProjectCardItem
-              key={project.id}
-              id={project.id}
-              title={project.title}
-              description={project.description}
-              techStack={project.techStack}
-              recruitmentStatus={project.recruitmentStatus}
-              category={project.category}
-            />
-          ))}
-        </CardsGrid>
+        {isLoading ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            데이터를 불러오는 중...
+          </div>
+        ) : posts.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            해당하는 프로젝트가 없습니다.
+          </div>
+        ) : (
+          <CardsGrid>
+            {posts.map((post) => (
+              <ProjectCardItem
+                key={post.id}
+                id={post.id}
+                title={post.title}
+                description={post.content}
+                techStacks={post.techStacks}
+                positions={post.positions}
+                recruitType={post.recruitType}
+                deadline={post.deadline}
+                period={post.period}
+                progressMethod={post.progressMethod}
+              />
+            ))}
+          </CardsGrid>
+        )}
 
-        <Pagination>{renderPageNumbers()}</Pagination>
+        {totalPages > 0 && <Pagination>{renderPageNumbers()}</Pagination>}
       </SectionContent>
     </SectionContainer>
   );
