@@ -575,6 +575,60 @@ const TeamModalContent = styled(ModalContent)`
   height: 420px;
 `;
 
+// 컬처핏 답변 매핑 (서버 필드명으로 변환)
+const cultureFitFieldMapping = {
+  "1. 협업 스타일": "collaborationStyle",
+  "2. 일정과 마감에 대한 태도": "deadlineAttitude",
+  "3. 문제 발생 시 대처 방식": "problemSolvingApproach",
+  "4. 의사소통 방식": "communicationStyle",
+  "5. 갈등 상황에서의 태도": "conflictResolution",
+  "6. 업무 분배에 대한 생각": "tackDistribution",
+};
+
+// 컬처핏 타입 인터페이스
+interface CultureFitResult {
+  cultureFitType: string;
+}
+
+// 컬처핏 제출 답변 인터페이스
+interface CultureFitSubmission {
+  collaborationStyle: string;
+  deadlineAttitude: string;
+  problemSolvingApproach: string;
+  communicationStyle: string;
+  conflictResolution: string;
+  tackDistribution: string;
+}
+
+// 컬처핏 타입 설명
+const cultureFitTypeDescription: { [key: string]: string } = {
+  PRACTICAL: "실용주의형",
+  DEMOCRATIC: "민주주의형",
+  AUTONOMOUS: "자율주의형",
+  COLLABORATIVE: "협업주의형",
+  STRUCTURED: "체계주의형",
+  FLEXIBLE: "유연주의형",
+  COMMUNICATIVE: "소통중시형",
+};
+
+// 컬처핏 타입 상세 설명
+const cultureFitTypeDetailDescription: { [key: string]: string } = {
+  PRACTICAL:
+    "당신은 효율성과 실용성을 중시하며, 명확한 역할 분담과 능력에 따른 효율적인 업무 배분을 선호합니다. 문제가 생겼을 때는 스스로 고민한 뒤 해결책을 공유하는 방식으로 일하며, 팀원들과의 소통도 중요시합니다. 갈등이 있을 때는 타협점을 찾으려 노력하는 합리적인 성향을 가지고 있습니다.",
+  DEMOCRATIC:
+    "모두의 의견을 존중하고 고르게 업무를 분담하는 것을 중요시합니다. 모든 결정은 팀원들의 동의를 바탕으로 이루어지며, 개인보다는 팀의 화합을 우선시합니다.",
+  AUTONOMOUS:
+    "독립적으로 일하는 것을 선호하며, 자신만의 공간과 시간을 통해 결과물을 만들어내는 것을 좋아합니다. 불필요한 소통보다는 각자의 전문성을 발휘하여 업무를 진행하는 방식을 선호합니다.",
+  COLLABORATIVE:
+    "긴밀한 협력과 지속적인 소통을 통해 함께 문제를 해결하는 것을 중요시합니다. 팀원들과 브레인스토밍하고 아이디어를 나누며 발전시키는 과정을 즐깁니다.",
+  STRUCTURED:
+    "체계적인 계획과 일정 관리를 중요시하며, 명확한 프로세스를 따라 프로젝트를 진행합니다. 계획대로 차근차근 일을 진행하는 것을 선호합니다.",
+  FLEXIBLE:
+    "상황에 따라 유연하게 대처하며, 변화와 새로운 아이디어를 수용하는 것을 선호합니다. 엄격한 규칙보다는 자유로운 환경에서 창의성을 발휘하는 것을 중요시합니다.",
+  COMMUNICATIVE:
+    "자주 의견을 나누고 소통하는 것을 중요시합니다. 팀원들과 충분한 대화를 통해 프로젝트를 진행하며, 열린 소통으로 문제를 해결하는 것을 선호합니다. 자유로운 의견 교환과 활발한 회의 문화를 지향합니다.",
+};
+
 const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -606,8 +660,14 @@ const ProjectDetailPage: React.FC = () => {
   const [isPeerReviewModalOpen, setIsPeerReviewModalOpen] = useState(false);
   const [cultureStep, setCultureStep] = useState(0);
   const [cultureAnswers, setCultureAnswers] = useState<(string | null)[]>(
-    Array(cultureFitQuestions.length).fill(null)
+    Array(cultureFitQuestions.length).fill(null) as (string | null)[]
   );
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [cultureResult, setCultureResult] = useState<CultureFitResult | null>(
+    null
+  );
+  const [cultureSubmission, setCultureSubmission] =
+    useState<CultureFitSubmission | null>(null);
 
   // 프로젝트 데이터 가져오기
   useEffect(() => {
@@ -842,16 +902,87 @@ const ProjectDetailPage: React.FC = () => {
   };
 
   // 컬처핏 제출
-  const handleCultureSubmit = () => {
-    setIsCultureFitOpen(false);
-    alert(
-      "컬처핏 답변이 제출되었습니다!\n" +
-        cultureFitQuestions
-          .map((q, i) => `${i + 1}. ${q.q}\n- ${cultureAnswers[i]}`)
-          .join("\n")
-    );
-    setCultureStep(0);
-    setCultureAnswers(Array(cultureFitQuestions.length).fill(null));
+  const handleCultureSubmit = async () => {
+    // 모든 질문에 답했는지 확인
+    if (cultureAnswers.some((answer) => answer === null)) {
+      alert("모든 질문에 답변해주세요.");
+      return;
+    }
+
+    try {
+      // API 요청 데이터 준비
+      const cultureFitData: { [key: string]: string } = {};
+
+      // 답변 데이터를 서버 포맷으로 변환
+      cultureFitQuestions.forEach((question, index) => {
+        const fieldName =
+          cultureFitFieldMapping[
+            question.q as keyof typeof cultureFitFieldMapping
+          ];
+        if (fieldName && cultureAnswers[index]) {
+          cultureFitData[fieldName] = cultureAnswers[index] as string;
+        }
+      });
+
+      // 토큰 가져오기
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      // API 호출
+      const response = await fetch(
+        `http://localhost:8080/api/v1/culture-fit/${id}/recommend`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "X-USER-ID": "1", // 실제 구현 시 사용자 ID를 동적으로 가져와야 함
+          },
+          body: JSON.stringify(cultureFitData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("컬처핏 등록 성공:", result);
+
+      // 결과 저장 및 결과 모달 표시
+      // API 응답 형식이 문자열이면 객체로 변환
+      let resultData: CultureFitResult;
+      if (typeof result === "string") {
+        resultData = { cultureFitType: result };
+      } else {
+        resultData = result;
+      }
+
+      setCultureResult(resultData);
+      setCultureSubmission({
+        collaborationStyle: cultureFitData.collaborationStyle || "",
+        deadlineAttitude: cultureFitData.deadlineAttitude || "",
+        problemSolvingApproach: cultureFitData.problemSolvingApproach || "",
+        communicationStyle: cultureFitData.communicationStyle || "",
+        conflictResolution: cultureFitData.conflictResolution || "",
+        tackDistribution: cultureFitData.tackDistribution || "",
+      });
+
+      setIsCultureFitOpen(false);
+      setShowResultModal(true);
+
+      // 폼 상태 초기화
+      setCultureStep(0);
+      setCultureAnswers(
+        Array(cultureFitQuestions.length).fill(null) as (string | null)[]
+      );
+    } catch (error) {
+      console.error("컬처핏 등록 중 오류:", error);
+      alert("컬처핏 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   if (loading) {
@@ -1181,6 +1312,122 @@ const ProjectDetailPage: React.FC = () => {
                 </ModalButtonRight>
               )}
             </ModalButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* 컬처핏 결과 모달 */}
+      {showResultModal && cultureResult && cultureSubmission && (
+        <ModalOverlay onClick={() => setShowResultModal(false)}>
+          <ModalContent
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxHeight: "600px", width: "600px" }}
+          >
+            <ModalClose onClick={() => setShowResultModal(false)}>
+              &times;
+            </ModalClose>
+            <ModalTitle>컬처핏 결과</ModalTitle>
+
+            <div style={{ marginBottom: "24px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "16px",
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: "20px",
+                    color: brandColors.primary,
+                    margin: 0,
+                  }}
+                >
+                  당신의 컬처핏 유형:
+                </h3>
+                <span
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "20px",
+                    marginLeft: "12px",
+                    color: brandColors.primaryDark,
+                  }}
+                >
+                  {cultureFitTypeDescription[cultureResult.cultureFitType] ||
+                    cultureResult.cultureFitType}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: "15px",
+                  lineHeight: "1.6",
+                  marginBottom: "20px",
+                  background: `${brandColors.primaryLight}30`,
+                  padding: "16px",
+                  borderRadius: "8px",
+                }}
+              >
+                <p>
+                  {cultureFitTypeDetailDescription[
+                    cultureResult.cultureFitType
+                  ] || ""}
+                </p>
+                <p
+                  style={{ marginTop: "8px", fontSize: "13px", color: "#666" }}
+                >
+                  문화 유형 코드: {cultureResult.cultureFitType}
+                </p>
+              </div>
+
+              <h4
+                style={{
+                  fontSize: "17px",
+                  marginTop: "24px",
+                  marginBottom: "16px",
+                }}
+              >
+                제출한 답변 정보
+              </h4>
+              <div
+                style={{
+                  background: "#f9f9f9",
+                  padding: "16px",
+                  borderRadius: "8px",
+                }}
+              >
+                <p>
+                  <strong>협업 스타일:</strong>{" "}
+                  {cultureSubmission.collaborationStyle}
+                </p>
+                <p>
+                  <strong>일정과 마감에 대한 태도:</strong>{" "}
+                  {cultureSubmission.deadlineAttitude}
+                </p>
+                <p>
+                  <strong>문제 발생 시 대처 방식:</strong>{" "}
+                  {cultureSubmission.problemSolvingApproach}
+                </p>
+                <p>
+                  <strong>의사소통 방식:</strong>{" "}
+                  {cultureSubmission.communicationStyle}
+                </p>
+                <p>
+                  <strong>갈등 상황에서의 태도:</strong>{" "}
+                  {cultureSubmission.conflictResolution}
+                </p>
+                <p>
+                  <strong>업무 분배에 대한 생각:</strong>{" "}
+                  {cultureSubmission.tackDistribution}
+                </p>
+              </div>
+            </div>
+
+            <ModalButton
+              onClick={() => setShowResultModal(false)}
+              style={{ display: "block", margin: "20px auto 0" }}
+            >
+              확인
+            </ModalButton>
           </ModalContent>
         </ModalOverlay>
       )}
