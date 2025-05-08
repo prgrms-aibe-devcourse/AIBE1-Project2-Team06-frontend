@@ -901,12 +901,6 @@ const ProjectDetailPage: React.FC = () => {
             <InfoValue>{projectData.recruitMember}명</InfoValue>
           </InfoRow>
           <InfoRow>
-            <InfoLabel>진행 방식</InfoLabel>
-            <InfoValue>
-              {renderProgressMethod(projectData.progressMethod)}
-            </InfoValue>
-          </InfoRow>
-          <InfoRow>
             <InfoLabel>연락 방법</InfoLabel>
             <InfoValue>
               <Link href={projectData.link} target="_blank">
@@ -914,12 +908,22 @@ const ProjectDetailPage: React.FC = () => {
               </Link>
             </InfoValue>
           </InfoRow>
+          <InfoRow>
+            <InfoLabel>모집 포지션</InfoLabel>
+            <InfoValue>
+              {projectData.positions.map((position, index) => (
+                <Tag key={index}>{position.name}</Tag>
+              ))}
+            </InfoValue>
+          </InfoRow>
         </div>
 
         <div>
           <InfoRow>
-            <InfoLabel>지원 방식</InfoLabel>
-            <InfoValue>{renderLinkType(projectData.linkType)}</InfoValue>
+            <InfoLabel>진행 방식</InfoLabel>
+            <InfoValue>
+              {renderProgressMethod(projectData.progressMethod)}
+            </InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>모집 마감</InfoLabel>
@@ -934,14 +938,6 @@ const ProjectDetailPage: React.FC = () => {
             <InfoValue>
               {projectData.techStacks.map((tech, index) => (
                 <Tag key={index}>{tech.name}</Tag>
-              ))}
-            </InfoValue>
-          </InfoRow>
-          <InfoRow>
-            <InfoLabel>모집 포지션</InfoLabel>
-            <InfoValue>
-              {projectData.positions.map((position, index) => (
-                <Tag key={index}>{position.name}</Tag>
               ))}
             </InfoValue>
           </InfoRow>
