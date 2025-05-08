@@ -678,15 +678,12 @@ const ProjectDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(
-          `http://localhost:8080/api/v1/posts/${id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`/api/v1/posts/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`서버 오류: ${response.status}`);
@@ -932,18 +929,15 @@ const ProjectDetailPage: React.FC = () => {
       }
 
       // API 호출
-      const response = await fetch(
-        `http://localhost:8080/api/v1/culture-fit/${id}/recommend`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "X-USER-ID": "1", // 실제 구현 시 사용자 ID를 동적으로 가져와야 함
-          },
-          body: JSON.stringify(cultureFitData),
-        }
-      );
+      const response = await fetch(`/api/v1/culture-fit/${id}/recommend`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-USER-ID": "1", // 실제 구현 시 사용자 ID를 동적으로 가져와야 함
+        },
+        body: JSON.stringify(cultureFitData),
+      });
 
       if (!response.ok) {
         throw new Error(`서버 오류: ${response.status}`);

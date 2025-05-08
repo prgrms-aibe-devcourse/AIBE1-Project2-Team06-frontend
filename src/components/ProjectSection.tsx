@@ -391,7 +391,7 @@ const ProjectSection: React.FC = () => {
     try {
       setIsLoading(true);
 
-      let url = `http://localhost:8080/api/v1/posts?page=${currentPage}&size=${projectsPerPage}`;
+      let url = `/api/v1/posts?page=${currentPage}&size=${projectsPerPage}`;
 
       // 카테고리 필터링이 필요한 경우 URL 수정
       if (activeCategory !== "전체") {

@@ -431,7 +431,7 @@ const RecruitFormPage: React.FC = () => {
       }
 
       // API 요청
-      const response = await fetch("http://localhost:8080/api/v1/posts", {
+      const response = await fetch("/api/v1/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
