@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 
@@ -316,15 +316,15 @@ interface PeerReviewData {
   [key: string]: PeerReview[];
 }
 
-// 가상의 사용자 데이터 (실제로는 API에서 가져옴)
-const userData = {
-  email: "won@example.com",
-  nickname: "won",
-  position: "백엔드",
-  level: "1년",
-  introduction: "안녕하세요. 1년차 백엔드 개발자 won입니다.",
-  interests: ["Spring", "Java", "MySQL", "Docker"],
-};
+// 사용자 프로필 데이터 타입 정의
+interface UserProfile {
+  nickname: string;
+  career: string;
+  shortDescription: string;
+  profileImageUrl: string | null;
+  position: string;
+  techStacks: string[];
+}
 
 // 가상의 활동 데이터 (실제로는 API에서 가져옴)
 const activityData = {
@@ -403,6 +403,81 @@ const MyPage: React.FC = () => {
     title: string;
   } | null>(null);
 
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          throw new Error("인증 토큰이 없습니다");
+        }
+
+        console.log("API 호출 시작...");
+
+        // 절대 경로 대신 상대 경로 사용
+        const response = await fetch("/api/v1/members/profile/me", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // 쿠키 포함 설정 추가
+        });
+
+        console.log("API 응답 상태:", response.status, response.statusText);
+
+        if (!response.ok) {
+          throw new Error("프로필 정보를 가져오는데 실패했습니다");
+        }
+
+        const data = await response.json();
+        console.log("API 응답 데이터:", data);
+
+        // 응답 값이 비어있거나 "UNDEFINED" 문자열일 경우 처리
+        const formatValue = (value: string | null | undefined): string => {
+          if (
+            !value ||
+            value === "" ||
+            value === "UNDEFINED" ||
+            value === "undefined"
+          ) {
+            return "없음";
+          }
+          return value;
+        };
+
+        // 응답 데이터 유효성 검사 및 기본값 설정
+        const safeData = {
+          nickname: formatValue(data.nickname),
+          career: formatValue(data.career),
+          shortDescription: formatValue(data.shortDescription),
+          profileImageUrl: data.profileImageUrl,
+          position: formatValue(data.position),
+          techStacks:
+            Array.isArray(data.techStacks) && data.techStacks.length > 0
+              ? data.techStacks
+              : [],
+        };
+
+        console.log("가공된 데이터:", safeData);
+        setUserData(safeData);
+      } catch (err) {
+        console.error("프로필 로딩 오류:", err);
+        setError(
+          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   const handleReviewClick = (
     type: "project" | "study",
     id: string,
@@ -415,46 +490,76 @@ const MyPage: React.FC = () => {
     setSelectedReview(null);
   };
 
+  if (loading) {
+    return <div>프로필을 불러오는 중...</div>;
+  }
+
+  if (error || !userData) {
+    return <div>프로필을 불러오는데 문제가 발생했습니다: {error}</div>;
+  }
+
   return (
     <PageContainer>
       <div>
         <ProfileSection>
           <ProfileImage>
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="#FFE500">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-            </svg>
+            {userData?.profileImageUrl ? (
+              <img
+                src={userData.profileImageUrl}
+                alt="프로필 이미지"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="#FFE500">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+              </svg>
+            )}
             <Badge>K</Badge>
           </ProfileImage>
-          <WelcomeMessage>{userData.nickname}님 환영해요.</WelcomeMessage>
+          <WelcomeMessage>{userData?.nickname}님 환영해요.</WelcomeMessage>
         </ProfileSection>
 
         <InfoSection>
           <InfoRow>
             <InfoLabel>닉네임</InfoLabel>
-            <InfoValue>{userData.nickname}</InfoValue>
+            <InfoValue>
+              {userData?.nickname !== "UNDEFINED" ? userData?.nickname : "없음"}
+            </InfoValue>
           </InfoRow>
 
           <InfoRow>
             <InfoLabel>직무</InfoLabel>
-            <InfoValue>{userData.position}</InfoValue>
+            <InfoValue>
+              {userData?.position !== "UNDEFINED" ? userData?.position : "없음"}
+            </InfoValue>
           </InfoRow>
 
           <InfoRow>
             <InfoLabel>경력</InfoLabel>
-            <InfoValue>{userData.level}</InfoValue>
+            <InfoValue>
+              {userData?.career !== "UNDEFINED" ? userData?.career : "없음"}
+            </InfoValue>
           </InfoRow>
 
           <InfoRow>
             <InfoLabel>자기소개</InfoLabel>
-            <InfoValue>{userData.introduction}</InfoValue>
+            <InfoValue>
+              {userData?.shortDescription !== "UNDEFINED"
+                ? userData?.shortDescription
+                : "없음"}
+            </InfoValue>
           </InfoRow>
 
           <InfoRow>
             <InfoLabel>관심분야</InfoLabel>
             <TagsContainer>
-              {userData.interests.map((interest, index) => (
-                <Tag key={index}>{interest}</Tag>
-              ))}
+              {userData?.techStacks && userData.techStacks.length > 0 ? (
+                userData.techStacks.map((tech, index) => (
+                  <Tag key={index}>{tech !== "UNDEFINED" ? tech : "없음"}</Tag>
+                ))
+              ) : (
+                <InfoValue>없음</InfoValue>
+              )}
             </TagsContainer>
           </InfoRow>
         </InfoSection>
