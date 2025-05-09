@@ -144,6 +144,11 @@ const Header: React.FC = () => {
     navigate("/mypage");
   };
 
+  const handleSettingsClick = () => {
+    setIsMenuOpen(false);
+    navigate("/settings");
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
@@ -181,6 +186,7 @@ const Header: React.FC = () => {
                 {isMenuOpen && (
                   <UserMenu>
                     <MenuItem onClick={handleMyPageClick}>마이페이지</MenuItem>
+                    <MenuItem onClick={handleSettingsClick}>설정</MenuItem>
                     <MenuItem onClick={handleLogout}>로그아웃</MenuItem>
                   </UserMenu>
                 )}

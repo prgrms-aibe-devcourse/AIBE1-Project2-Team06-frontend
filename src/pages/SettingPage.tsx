@@ -283,18 +283,81 @@ const CancelLink = styled.div`
   }
 `;
 
+// 포지션 ID 매핑 객체
+const positionIdMap: { [key: string]: number } = {
+  프론트엔드: 1,
+  백엔드: 2,
+  디자이너: 3,
+  IOS: 4,
+  안드로이드: 5,
+  데브옵스: 6,
+  PM: 7,
+  기획자: 8,
+  마케터: 9,
+};
+
+// 기술 스택 ID 매핑 객체
+const techStackIdMap: { [key: string]: number } = {
+  JavaScript: 1,
+  TypeScript: 2,
+  React: 3,
+  Vue: 4,
+  Nodejs: 5,
+  Spring: 6,
+  Java: 7,
+  Nextjs: 8,
+  Nestjs: 9,
+  Express: 10,
+  Go: 11,
+  C: 12,
+  Python: 13,
+  Django: 14,
+  Swift: 15,
+  Kotlin: 16,
+  MySQL: 17,
+  MongoDB: 18,
+  PHP: 19,
+  GraphQL: 20,
+  Firebase: 21,
+  ReactNative: 22,
+  Unity: 23,
+  Flutter: 24,
+  AWS: 25,
+  Kubernetes: 26,
+  Docker: 27,
+  Git: 28,
+  Figma: 29,
+  Zeplin: 30,
+  Jest: 31,
+  Svelte: 32,
+};
+
+// 사용자 프로필 데이터 타입 정의
+interface UserProfile {
+  nickname: string;
+  career: string;
+  shortDescription: string;
+  profileImageUrl: string | null;
+  position: string;
+  techStacks: string[];
+}
+
 const SettingPage: React.FC = () => {
   const navigate = useNavigate();
 
   // 상태 관리
-  const [nickname, setNickname] = useState("won");
-  const [position, setPosition] = useState("백엔드");
-  const [level, setLevel] = useState("1년");
-  const [introduction, setIntroduction] = useState(
-    "안녕하세요. 1년차 백엔드 개발자 won입니다."
-  );
-  const [tags, setTags] = useState<string[]>(["Spring"]);
+  const [nickname, setNickname] = useState("");
+  const [position, setPosition] = useState("");
+  const [level, setLevel] = useState("");
+  const [introduction, setIntroduction] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [showTagOptions, setShowTagOptions] = useState(false);
+
+  // API 로딩 상태
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   // 드롭다운 상태
   const [isPositionOpen, setIsPositionOpen] = useState(false);
@@ -315,6 +378,7 @@ const SettingPage: React.FC = () => {
 
   // 경력 옵션
   const levelOptions = [
+    "신입",
     "0년",
     "1년",
     "2년",
@@ -371,13 +435,161 @@ const SettingPage: React.FC = () => {
   // 선택한 프로필 공개 여부
   const [isPublic, setIsPublic] = useState(true);
 
+  // API로 사용자 프로필 데이터 가져오기
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          throw new Error("인증 토큰이 없습니다");
+        }
+
+        console.log("설정 페이지 API 호출 시작...");
+
+        // 상대 경로 사용
+        const response = await fetch("/api/v1/members/profile/me", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        console.log("API 응답 상태:", response.status, response.statusText);
+
+        if (!response.ok) {
+          throw new Error("프로필 정보를 가져오는데 실패했습니다");
+        }
+
+        const data = await response.json();
+        console.log("API 응답 데이터:", data);
+
+        // 응답 값이 비어있거나 "UNDEFINED" 문자열일 경우 처리
+        const formatValue = (value: string | null | undefined): string => {
+          if (
+            !value ||
+            value === "" ||
+            value === "UNDEFINED" ||
+            value === "undefined"
+          ) {
+            return "";
+          }
+          return value;
+        };
+
+        // 폼 데이터에 API 응답 반영
+        setNickname(formatValue(data.nickname));
+        setPosition(formatValue(data.position));
+        setLevel(formatValue(data.career));
+        setIntroduction(formatValue(data.shortDescription));
+
+        // 태그 설정
+        if (Array.isArray(data.techStacks) && data.techStacks.length > 0) {
+          setTags(data.techStacks);
+        }
+      } catch (err) {
+        console.error("프로필 로딩 오류:", err);
+        setError(
+          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   // 폼 제출 처리
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 여기에 제출 로직 구현
-    alert("프로필이 업데이트되었습니다!");
-    // 프로필 저장 후 홈으로 이동
-    navigate("/");
+
+    // 입력 값 검증
+    if (!nickname.trim()) {
+      alert("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (!position) {
+      alert("직무를 선택해주세요.");
+      return;
+    }
+
+    if (!level) {
+      alert("경력을 선택해주세요.");
+      return;
+    }
+
+    // 태그 없으면 경고만 표시하고 진행 (필수가 아닐 수 있으므로)
+    if (tags.length === 0) {
+      const proceed = window.confirm(
+        "관심분야가 선택되지 않았습니다. 계속 진행하시겠습니까?"
+      );
+      if (!proceed) return;
+    }
+
+    try {
+      setIsSaving(true);
+      setSaveSuccess(false);
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("인증 토큰이 없습니다");
+      }
+
+      // 포지션 ID와 기술스택 ID 변환
+      const positionId = positionIdMap[position] || 0;
+      const techStackIds = tags
+        .map((tag) => techStackIdMap[tag] || 0)
+        .filter((id) => id > 0);
+
+      // 요청 데이터 구성
+      const profileData = {
+        nickname,
+        career: level,
+        shortDescription: introduction,
+        positionId,
+        techStackIds,
+      };
+
+      console.log("프로필 저장 요청 데이터:", profileData);
+
+      const response = await fetch("/api/v1/members/profile", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        console.error("응답 상태:", response.status);
+        const errorData = await response.text();
+        console.error("에러 응답:", errorData);
+        throw new Error("프로필 저장에 실패했습니다");
+      }
+
+      console.log("프로필 저장 성공!");
+      setSaveSuccess(true);
+
+      // 성공 메시지 표시 후 홈으로 이동
+      alert("프로필이 성공적으로 저장되었습니다!");
+      navigate("/mypage");
+    } catch (err) {
+      console.error("프로필 저장 오류:", err);
+      alert(
+        err instanceof Error
+          ? err.message
+          : "프로필 저장 중 오류가 발생했습니다"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // 태그 토글 (추가/제거)
@@ -427,6 +639,14 @@ const SettingPage: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return <div>프로필을 불러오는 중...</div>;
+  }
+
+  if (error) {
+    return <div>프로필을 불러오는데 문제가 발생했습니다: {error}</div>;
+  }
+
   return (
     <PageContainer>
       <ProfileSection>
@@ -436,7 +656,7 @@ const SettingPage: React.FC = () => {
           </svg>
           <Badge>K</Badge>
         </ProfileImage>
-        <WelcomeMessage>won님 환영해요.</WelcomeMessage>
+        <WelcomeMessage>{nickname}님 환영해요.</WelcomeMessage>
       </ProfileSection>
 
       <form onSubmit={handleSubmit}>
@@ -446,6 +666,7 @@ const SettingPage: React.FC = () => {
             id="nickname"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임을 입력해주세요"
           />
         </FormField>
 
@@ -453,7 +674,7 @@ const SettingPage: React.FC = () => {
           <Label htmlFor="position">직무</Label>
           <SelectContainer ref={positionRef}>
             <Select onClick={() => setIsPositionOpen(!isPositionOpen)}>
-              {position}
+              {position || "직무를 선택해주세요"}
             </Select>
             <DropdownMenu isOpen={isPositionOpen}>
               {positionOptions.map((option) => (
@@ -505,7 +726,7 @@ const SettingPage: React.FC = () => {
           <Label htmlFor="level">경력</Label>
           <SelectContainer ref={levelRef}>
             <Select onClick={() => setIsLevelOpen(!isLevelOpen)}>
-              {level}
+              {level || "경력을 선택해주세요"}
             </Select>
             <DropdownMenu isOpen={isLevelOpen}>
               {levelOptions.map((option) => (
@@ -529,6 +750,7 @@ const SettingPage: React.FC = () => {
             id="introduction"
             value={introduction}
             onChange={(e) => setIntroduction(e.target.value)}
+            placeholder="자기소개를 입력해주세요"
           />
         </FormField>
 
@@ -569,7 +791,9 @@ const SettingPage: React.FC = () => {
           )}
         </TagsSection>
 
-        <SubmitButton type="submit">프로필 저장</SubmitButton>
+        <SubmitButton type="submit" disabled={isSaving}>
+          {isSaving ? "저장 중..." : "프로필 저장"}
+        </SubmitButton>
         <CancelLink onClick={handleCancel}>취소</CancelLink>
       </form>
     </PageContainer>
