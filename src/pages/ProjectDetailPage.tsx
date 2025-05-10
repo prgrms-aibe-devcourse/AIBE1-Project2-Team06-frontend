@@ -539,6 +539,11 @@ const mockUsers = [
   { id: "5", nickname: "김시용", email: "siyong@example.com" },
 ];
 
+// 검색 결과를 위한 인터페이스 추가
+interface SearchResult {
+  nickname: string;
+}
+
 // 프로젝트 데이터 인터페이스
 interface TechStack {
   id: number;
@@ -630,11 +635,21 @@ const cultureFitTypeDetailDescription: { [key: string]: string } = {
     "자주 의견을 나누고 소통하는 것을 중요시합니다. 팀원들과 충분한 대화를 통해 프로젝트를 진행하며, 열린 소통으로 문제를 해결하는 것을 선호합니다. 자유로운 의견 교환과 활발한 회의 문화를 지향합니다.",
 };
 
+// 팀원 정보 인터페이스 추가
+interface TeamMember {
+  id: number;
+  postId: number;
+  memberId: number;
+  nickname: string;
+  isOwner: boolean;
+  createdAt: string;
+}
+
 const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchResults, setSearchResults] = useState<typeof mockUsers>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -669,6 +684,11 @@ const ProjectDetailPage: React.FC = () => {
   );
   const [cultureSubmission, setCultureSubmission] =
     useState<CultureFitSubmission | null>(null);
+
+  // 팀원 정보 인터페이스 추가
+  const [existingTeamMembers, setExistingTeamMembers] = useState<TeamMember[]>(
+    []
+  );
 
   // 프로젝트 데이터 가져오기
   useEffect(() => {
@@ -799,21 +819,43 @@ const ProjectDetailPage: React.FC = () => {
   };
 
   // 닉네임 검색 함수
-  const searchMembers = () => {
+  const searchMembers = async () => {
     if (searchKeyword.trim() === "") {
       setSearchResults([]);
       setShowResults(false);
       return;
     }
 
-    const filtered = mockUsers.filter(
-      (user) =>
-        user.nickname.toLowerCase().includes(searchKeyword.toLowerCase()) &&
-        !teamMembers.includes(user.nickname)
-    );
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/members/profile/${searchKeyword}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    setSearchResults(filtered);
-    setShowResults(true);
+      if (!response.ok) {
+        throw new Error("검색 결과를 가져오는데 실패했습니다.");
+      }
+
+      const data = await response.json();
+
+      if (data && !teamMembers.includes(data.nickname)) {
+        setSearchResults([{ nickname: data.nickname }]);
+        setShowResults(true);
+      } else {
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    } catch (error) {
+      console.error("검색 중 오류 발생:", error);
+      alert("검색 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setSearchResults([]);
+      setShowResults(false);
+    }
   };
 
   // 엔터 키 처리
@@ -838,10 +880,49 @@ const ProjectDetailPage: React.FC = () => {
     setTeamMembers(teamMembers.filter((member) => member !== nickname));
   };
 
-  // 팀원 저장 (실제로는 API 호출)
-  const saveTeamMembers = () => {
-    // API 호출 로직 추가 예정
-    alert(`팀원 변경사항이 저장되었습니다: ${teamMembers.join(", ")}`);
+  // 팀원 저장 함수
+  const saveTeamMembers = async () => {
+    if (!id) {
+      alert("프로젝트 ID가 없습니다.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/posts/${id}/members`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            postId: parseInt(id),
+            nicknames: teamMembers,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert("인증이 필요합니다. 다시 로그인해주세요.");
+          return;
+        }
+        throw new Error("팀원 정보 저장에 실패했습니다.");
+      }
+
+      alert("팀원 정보가 성공적으로 저장되었습니다.");
+      setIsTeamModalOpen(false);
+    } catch (error) {
+      console.error("팀원 정보 저장 중 오류 발생:", error);
+      alert("팀원 정보 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   // 피어리뷰 제출
@@ -980,6 +1061,41 @@ const ProjectDetailPage: React.FC = () => {
     }
   };
 
+  // 팀원 목록 가져오기
+  const fetchTeamMembers = async () => {
+    if (!id) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/posts/${id}/members`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("팀원 정보를 가져오는데 실패했습니다.");
+      }
+
+      const data: TeamMember[] = await response.json();
+      setExistingTeamMembers(data);
+      // 기존 팀원들의 닉네임을 teamMembers 상태에도 설정
+      setTeamMembers(data.map((member) => member.nickname));
+    } catch (error) {
+      console.error("팀원 정보 로딩 중 오류 발생:", error);
+      alert("팀원 정보를 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 팀원 관리 모달이 열릴 때 팀원 목록 가져오기
+  const handleTeamModalOpen = () => {
+    setIsTeamModalOpen(true);
+    fetchTeamMembers();
+  };
+
   if (loading) {
     return (
       <PageContainer>
@@ -1081,7 +1197,7 @@ const ProjectDetailPage: React.FC = () => {
       <ButtonGroup>
         <Button onClick={handleGoBack}>{"<"}</Button>
         <ButtonRightGroup>
-          <Button onClick={() => setIsTeamModalOpen(true)}>팀원 관리</Button>
+          <Button onClick={handleTeamModalOpen}>팀원 관리</Button>
           <Button onClick={() => setIsPeerReviewModalOpen(true)}>
             피어리뷰 작성
           </Button>
@@ -1119,24 +1235,42 @@ const ProjectDetailPage: React.FC = () => {
                 >
                   {searchResults.map((user) => (
                     <SearchResultItem
-                      key={user.id}
+                      key={user.nickname}
                       onClick={() => addTeamMember(user.nickname)}
                     >
-                      {user.nickname} ({user.email})
+                      {user.nickname}
                     </SearchResultItem>
                   ))}
                 </SearchResults>
               </TeamSearchContainer>
             </div>
             <div>
-              {teamMembers.map((member, index) => (
-                <TeamMemberTag key={index}>
-                  {member}
-                  <RemoveButton onClick={() => removeTeamMember(member)}>
-                    ×
-                  </RemoveButton>
-                </TeamMemberTag>
-              ))}
+              {teamMembers.map((member, index) => {
+                const existingMember = existingTeamMembers.find(
+                  (m) => m.nickname === member
+                );
+                return (
+                  <TeamMemberTag key={index}>
+                    {member}
+                    {existingMember?.isOwner && (
+                      <span
+                        style={{
+                          marginLeft: "4px",
+                          fontSize: "12px",
+                          color: "#666",
+                        }}
+                      >
+                        (팀장)
+                      </span>
+                    )}
+                    {!existingMember?.isOwner && (
+                      <RemoveButton onClick={() => removeTeamMember(member)}>
+                        ×
+                      </RemoveButton>
+                    )}
+                  </TeamMemberTag>
+                );
+              })}
             </div>
             {teamMembers.length > 0 && (
               <SaveButton primary onClick={saveTeamMembers}>
