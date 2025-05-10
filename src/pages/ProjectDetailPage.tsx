@@ -552,15 +552,16 @@ interface Position {
 
 interface ProjectDetailData {
   id: number;
-  userId: number;
+  publicId: string;
+  nickname: string;
   title: string;
   content: string;
-  recruitType: string; // "STUDY", "PROJECT"
+  recruitType: string;
   recruitMember: number;
-  progressMethod: string; // "ONLINE", "OFFLINE", "ALL"
-  period: string; // "MONTH_1", "MONTH_3", "MONTH_6", "MONTH_6_MORE"
+  progressMethod: string;
+  period: string;
   deadline: string;
-  linkType: string; // "KAKAO", "EMAIL", "GOOGLE"
+  linkType: string;
   link: string;
   cultureFit: string;
   status: string;
@@ -1007,8 +1008,12 @@ const ProjectDetailPage: React.FC = () => {
         <MetaInfo>
           <RouterLink to="/mypage" style={{ textDecoration: "none" }}>
             <Author style={{ cursor: "pointer" }}>
-              <AuthorAvatar>🧑</AuthorAvatar>
-              <AuthorName>유저 {projectData.userId}</AuthorName>
+              <AuthorAvatar>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#8ED11E">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+                </svg>
+              </AuthorAvatar>
+              <AuthorName>{projectData.nickname}</AuthorName>
             </Author>
           </RouterLink>
           <DateText>{formatDate(projectData.createdAt)}</DateText>
