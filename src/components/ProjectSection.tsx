@@ -709,6 +709,65 @@ const ProjectSection: React.FC = () => {
     }
   };
 
+  // 드롭다운 onChange 핸들러
+  const handleTechSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value && !selectedTechs.includes(value)) {
+      // 기술 스택 선택 시 페이지 초기화
+      setCurrentPage(0);
+      setSelectedTechs([...selectedTechs, value]);
+    }
+    // 드롭다운을 다시 "기술 스택"으로 초기화
+    e.target.selectedIndex = 0;
+  };
+
+  // 태그 제거 핸들러
+  const handleRemoveTech = (tech: string) => {
+    // 기술 스택 태그 제거 시 페이지 초기화
+    setCurrentPage(0);
+    setSelectedTechs(selectedTechs.filter((t) => t !== tech));
+  };
+
+  // 포지션 변경 핸들러
+  const handlePositionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // 포지션 변경 시 페이지 초기화
+    setCurrentPage(0);
+    setSelectedPosition(e.target.value);
+  };
+
+  // 진행 방식 변경 핸들러
+  const handleProgressChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // 진행 방식 변경 시 페이지 초기화
+    setCurrentPage(0);
+    setSelectedProgress(e.target.value);
+  };
+
+  // 컬처핏 변경 핸들러
+  const handleCultureChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // 컬처핏 변경 시 페이지 초기화
+    setCurrentPage(0);
+    setSelectedCulture(e.target.value);
+  };
+
+  // 모집 중만 보기 토글 핸들러
+  const handleRecruitingToggle = () => {
+    // 모집 중만 보기 토글 시 페이지 초기화
+    setCurrentPage(0);
+    setShowRecruitingOnly((prev) => !prev);
+  };
+
+  // 검색어 입력 핸들러
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // 엔터 키 누를 때 검색 실행
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   // 검색 실행 함수
   const handleSearch = () => {
     // 검색 시 첫 페이지로 이동
@@ -731,15 +790,18 @@ const ProjectSection: React.FC = () => {
   // 기술 스택 필터 변경 시 데이터 새로고침 (디바운스 처리)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (currentPage === 0) {
-        fetchPosts();
-      } else {
-        setCurrentPage(0); // 페이지를 0으로 변경하면 위의 useEffect에서 자동으로 fetchPosts 호출
-      }
+      fetchPosts();
     }, 300);
 
     return () => clearTimeout(timer);
   }, [selectedTechs]);
+
+  // 카테고리 변경 핸들러 함수
+  const handleCategoryChange = (category: string) => {
+    // 카테고리가 변경되면 페이지를 0으로 초기화
+    setCurrentPage(0);
+    setActiveCategory(category);
+  };
 
   // 페이지 번호 생성
   const renderPageNumbers = () => {
@@ -840,40 +902,6 @@ const ProjectSection: React.FC = () => {
     return pageNumbers;
   };
 
-  // 드롭다운 onChange 핸들러
-  const handleTechSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value && !selectedTechs.includes(value)) {
-      setSelectedTechs([...selectedTechs, value]);
-    }
-    // 드롭다운을 다시 "기술 스택"으로 초기화
-    e.target.selectedIndex = 0;
-  };
-
-  // 태그 제거 핸들러
-  const handleRemoveTech = (tech: string) => {
-    setSelectedTechs(selectedTechs.filter((t) => t !== tech));
-  };
-
-  // 검색어 입력 핸들러
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // 엔터 키 누를 때 검색 실행
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
-  // 카테고리 변경 핸들러 함수
-  const handleCategoryChange = (category: string) => {
-    // 카테고리가 변경되면 페이지를 0으로 초기화
-    setCurrentPage(0);
-    setActiveCategory(category);
-  };
-
   // 페이지 변경 함수
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber - 1); // API는 0부터 시작하므로 1을 빼줌
@@ -930,7 +958,7 @@ const ProjectSection: React.FC = () => {
           </FilterSelect>
           <FilterSelect
             value={selectedPosition}
-            onChange={(e) => setSelectedPosition(e.target.value)}
+            onChange={handlePositionChange}
           >
             <option value="">포지션</option>
             {positionOptions.map((opt) => (
@@ -941,7 +969,7 @@ const ProjectSection: React.FC = () => {
           </FilterSelect>
           <FilterSelect
             value={selectedProgress}
-            onChange={(e) => setSelectedProgress(e.target.value)}
+            onChange={handleProgressChange}
           >
             <option value="">진행 방식</option>
             {progressMethodOptions.map((opt) => (
@@ -950,10 +978,7 @@ const ProjectSection: React.FC = () => {
               </option>
             ))}
           </FilterSelect>
-          <FilterSelect
-            value={selectedCulture}
-            onChange={(e) => setSelectedCulture(e.target.value)}
-          >
+          <FilterSelect value={selectedCulture} onChange={handleCultureChange}>
             <option value="">컬처핏</option>
             {cultureFitOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -963,7 +988,7 @@ const ProjectSection: React.FC = () => {
           </FilterSelect>
           <ToggleButton
             active={showRecruitingOnly}
-            onClick={() => setShowRecruitingOnly((v) => !v)}
+            onClick={handleRecruitingToggle}
           >
             👀 모집 중만 보기
           </ToggleButton>
