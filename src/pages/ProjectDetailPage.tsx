@@ -185,6 +185,16 @@ const DangerButton = styled(Button)`
   }
 `;
 
+const CompleteButton = styled(Button)`
+  background-color: #1976d2;
+  color: #fff;
+  border: 1px solid #1976d2;
+  &:hover {
+    background-color: #115293;
+    border-color: #115293;
+  }
+`;
+
 // 팀원 관리 스타일 컴포넌트
 const TeamSection = styled.div`
   margin-bottom: 40px;
@@ -655,6 +665,14 @@ interface TeamMember {
   createdAt: string;
 }
 
+const Input = styled.input`
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #fafbfc;
+`;
+
 const ProjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -699,6 +717,10 @@ const ProjectDetailPage: React.FC = () => {
   const [existingTeamMembers, setExistingTeamMembers] = useState<TeamMember[]>(
     []
   );
+
+  // 추가된 상태
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [githubLink, setGithubLink] = useState("");
 
   // 프로젝트 데이터 가져오기
   useEffect(() => {
@@ -1129,6 +1151,34 @@ const ProjectDetailPage: React.FC = () => {
     }
   };
 
+  const handleComplete = async () => {
+    if (!id) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/posts/${id}/complete`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ githubLink }),
+        }
+      );
+      if (!response.ok) throw new Error("모집 완료 처리 실패");
+      alert("모집이 완료되었습니다.");
+      setIsCompleteModalOpen(false);
+      window.location.reload();
+    } catch (e) {
+      alert("모집 완료 처리 중 오류가 발생했습니다.");
+    }
+  };
+
   if (loading) {
     return (
       <PageContainer>
@@ -1240,6 +1290,9 @@ const ProjectDetailPage: React.FC = () => {
           <Button primary onClick={() => setIsCultureFitOpen(true)}>
             컬처핏 등록
           </Button>
+          <CompleteButton onClick={() => setIsCompleteModalOpen(true)}>
+            모집 완료
+          </CompleteButton>
           <DangerButton onClick={handleDelete}>삭제</DangerButton>
         </ButtonRightGroup>
       </ButtonGroup>
@@ -1601,6 +1654,38 @@ const ProjectDetailPage: React.FC = () => {
             >
               확인
             </ModalButton>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* 모집 완료 모달 */}
+      {isCompleteModalOpen && (
+        <ModalOverlay onClick={() => setIsCompleteModalOpen(false)}>
+          <ModalContent
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: 400 }}
+          >
+            <ModalClose onClick={() => setIsCompleteModalOpen(false)}>
+              &times;
+            </ModalClose>
+            <ModalTitle>모집 완료 처리</ModalTitle>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontWeight: 500, fontSize: 15 }}>
+                깃허브 링크
+              </label>
+              <Input
+                type="text"
+                value={githubLink}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setGithubLink(e.target.value)
+                }
+                placeholder="프로젝트 깃허브 링크를 입력하세요"
+                style={{ marginTop: 8, width: "100%" }}
+              />
+            </div>
+            <Button primary style={{ width: "100%" }} onClick={handleComplete}>
+              제출하기
+            </Button>
           </ModalContent>
         </ModalOverlay>
       )}
