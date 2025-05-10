@@ -6,6 +6,7 @@ import SettingPage from "../pages/SettingPage";
 import ProjectDetailPage from "../pages/ProjectDetailPage";
 import MyPage from "../pages/MyPage";
 import RecruitFormPage from "../pages/RecruitFormPage";
+import RecruitEditPage from "../pages/RecruitEditPage";
 import ProfilePage from "../pages/ProfilePage";
 
 const AppRoutes: React.FC = () => {
@@ -21,6 +22,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/projects" element={<div>프로젝트 페이지 (준비중)</div>} />
       <Route path="/teams" element={<Navigate to="/recruit" replace />} />
       <Route path="/recruit" element={<RecruitFormPage />} />
+      <Route path="/recruits/edit/:id" element={<RecruitEditPage />} />
       <Route path="/community" element={<div>커뮤니티 페이지 (준비중)</div>} />
       <Route path="/register" element={<div>회원가입 페이지 (준비중)</div>} />
       <Route path="*" element={<div>404 페이지를 찾을 수 없습니다.</div>} />

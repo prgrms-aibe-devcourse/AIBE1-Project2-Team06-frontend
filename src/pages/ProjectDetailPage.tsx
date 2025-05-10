@@ -1195,8 +1195,11 @@ const ProjectDetailPage: React.FC = () => {
 
       {/* 팀원 관리/피어리뷰 버튼 */}
       <ButtonGroup>
-        <Button onClick={handleGoBack}>{"<"}</Button>
+        <Button onClick={handleGoBack}>목록으로</Button>
         <ButtonRightGroup>
+          <Button onClick={() => navigate(`/recruits/edit/${id}`)}>
+            수정하기
+          </Button>
           <Button onClick={handleTeamModalOpen}>팀원 관리</Button>
           <Button onClick={() => setIsPeerReviewModalOpen(true)}>
             피어리뷰 작성
