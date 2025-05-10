@@ -1006,7 +1006,10 @@ const ProjectDetailPage: React.FC = () => {
       <TitleSection>
         <Title>{projectData.title}</Title>
         <MetaInfo>
-          <RouterLink to="/mypage" style={{ textDecoration: "none" }}>
+          <RouterLink
+            to={`/profile/${projectData.publicId}`}
+            style={{ textDecoration: "none" }}
+          >
             <Author style={{ cursor: "pointer" }}>
               <AuthorAvatar>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#8ED11E">
