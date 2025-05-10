@@ -869,6 +869,8 @@ const ProjectSection: React.FC = () => {
 
   // 카테고리 변경 핸들러 함수
   const handleCategoryChange = (category: string) => {
+    // 카테고리가 변경되면 페이지를 0으로 초기화
+    setCurrentPage(0);
     setActiveCategory(category);
   };
 
