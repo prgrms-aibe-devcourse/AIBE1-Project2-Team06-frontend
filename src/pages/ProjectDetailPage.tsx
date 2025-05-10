@@ -175,6 +175,16 @@ const Button = styled.button<{ primary?: boolean }>`
   }
 `;
 
+const DangerButton = styled(Button)`
+  background-color: #ff4444;
+  color: #fff;
+  border: 1px solid #ff4444;
+  &:hover {
+    background-color: #d32f2f;
+    border-color: #d32f2f;
+  }
+`;
+
 // 팀원 관리 스타일 컴포넌트
 const TeamSection = styled.div`
   margin-bottom: 40px;
@@ -1096,6 +1106,29 @@ const ProjectDetailPage: React.FC = () => {
     fetchTeamMembers();
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("정말로 이 프로젝트를 삭제하시겠습니까?")) return;
+    if (!id) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/posts/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("삭제 실패");
+      alert("삭제가 완료되었습니다.");
+      navigate("/");
+    } catch (e) {
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   if (loading) {
     return (
       <PageContainer>
@@ -1207,6 +1240,7 @@ const ProjectDetailPage: React.FC = () => {
           <Button primary onClick={() => setIsCultureFitOpen(true)}>
             컬처핏 등록
           </Button>
+          <DangerButton onClick={handleDelete}>삭제</DangerButton>
         </ButtonRightGroup>
       </ButtonGroup>
 
