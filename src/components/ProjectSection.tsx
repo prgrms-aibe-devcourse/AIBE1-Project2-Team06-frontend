@@ -213,21 +213,6 @@ const AuthorName = styled.span`
   font-weight: 500;
 `;
 
-const CardStats = styled.div`
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #999;
-  font-size: 12px;
-`;
-
-const StatItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
 const Pagination = styled.div`
   display: flex;
   justify-content: center;
@@ -324,16 +309,6 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
               <AuthorName>{nickname}</AuthorName>
             </AuthorInfo>
           </Link>
-          <CardStats>
-            <StatItem>
-              👍
-              <span>7</span>
-            </StatItem>
-            <StatItem>
-              💬
-              <span>0</span>
-            </StatItem>
-          </CardStats>
         </CardFooter>
       </CardContent>
     </ProjectCardWrapper>
