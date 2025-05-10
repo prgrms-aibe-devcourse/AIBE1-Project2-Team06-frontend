@@ -268,6 +268,7 @@ interface ProjectCardItemProps {
   deadline?: string;
   period?: string;
   progressMethod?: string;
+  nickname: string;
 }
 
 const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
@@ -280,6 +281,7 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
   deadline,
   period,
   progressMethod,
+  nickname,
 }) => {
   const navigate = useNavigate();
   const formattedDeadline = deadline
@@ -314,8 +316,12 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <AuthorInfo style={{ cursor: "pointer" }}>
-              <AuthorAvatar>😺</AuthorAvatar>
-              <AuthorName>Blue Cat</AuthorName>
+              <AuthorAvatar>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#8ED11E">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+                </svg>
+              </AuthorAvatar>
+              <AuthorName>{nickname}</AuthorName>
             </AuthorInfo>
           </Link>
           <CardStats>
@@ -347,6 +353,8 @@ interface Position {
 
 interface Post {
   id: number;
+  publicId: string;
+  nickname: string;
   userId: number;
   title: string;
   content: string;
@@ -594,6 +602,7 @@ const ProjectSection: React.FC = () => {
                 deadline={post.deadline}
                 period={post.period}
                 progressMethod={post.progressMethod}
+                nickname={post.nickname}
               />
             ))}
           </CardsGrid>
