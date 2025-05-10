@@ -243,6 +243,89 @@ const PageNumber = styled.button<{ active?: boolean }>`
   }
 `;
 
+const FilterBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+`;
+
+// 카테고리 버튼 스타일 컴포넌트 추가
+const CategoryButtonContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+`;
+
+const CategoryButton = styled.button<{ active: boolean }>`
+  padding: 8px 20px;
+  background-color: ${({ active }) =>
+    active ? brandColors.primary : "transparent"};
+  color: ${({ active }) => (active ? "white" : "#666")};
+  border: 1px solid ${({ active }) => (active ? brandColors.primary : "#ddd")};
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "CookieRun-Regular", sans-serif;
+
+  &:hover {
+    background-color: ${({ active }) =>
+      active ? brandColors.primary : "#f0f0f0"};
+  }
+`;
+
+const FilterSelect = styled.select`
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 15px;
+`;
+
+// ToggleButton 컴포넌트 다시 추가
+const ToggleButton = styled.button<{ active: boolean }>`
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1.5px solid ${({ active }) => (active ? "#00bfae" : "#ddd")};
+  background: ${({ active }) => (active ? "#e6fcfa" : "#fff")};
+  color: ${({ active }) => (active ? "#00bfae" : "#333")};
+  font-weight: 500;
+  cursor: pointer;
+`;
+
+// 검색창 스타일 컴포넌트 추가
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: auto; // 오른쪽 정렬
+`;
+
+const SearchInput = styled.input`
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: #f5f5f5;
+  font-size: 15px;
+  width: 250px;
+  &:focus {
+    outline: none;
+    border-color: ${brandColors.primary};
+    background: #fff;
+  }
+`;
+
+const SearchIcon = styled.div`
+  margin-left: -32px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+`;
+
 interface ProjectCardItemProps {
   id: number;
   publicId: string;
@@ -352,39 +435,253 @@ interface Post {
   positions: Position[];
 }
 
+interface PageInfo {
+  pageNumber: number;
+  pageSize: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  offset: number;
+  paged: boolean;
+  unpaged: boolean;
+}
+
 interface PostResponse {
   content: Post[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-  };
+  pageable: PageInfo;
   totalPages: number;
   totalElements: number;
   last: boolean;
   first: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
   empty: boolean;
 }
+
+// 필터 옵션 상수
+const techStackOptions = [
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Vue",
+  "Nodejs",
+  "Spring",
+  "Java",
+  "Nextjs",
+  "Nestjs",
+  "Express",
+  "Go",
+  "C",
+  "Python",
+  "Django",
+  "Swift",
+  "Kotlin",
+  "MySQL",
+  "MongoDB",
+  "PHP",
+  "GraphQL",
+  "Firebase",
+  "ReactNative",
+  "Unity",
+  "Flutter",
+  "AWS",
+  "Kubernetes",
+  "Docker",
+  "Git",
+  "Figma",
+  "Zeplin",
+  "Jest",
+  "Svelte",
+];
+
+// 기술 스택 ID 매핑 객체
+const techStackIdMap: { [key: string]: number } = {
+  JavaScript: 1,
+  TypeScript: 2,
+  React: 3,
+  Vue: 4,
+  Nodejs: 5,
+  Spring: 6,
+  Java: 7,
+  Nextjs: 8,
+  Nestjs: 9,
+  Express: 10,
+  Go: 11,
+  C: 12,
+  Python: 13,
+  Django: 14,
+  Swift: 15,
+  Kotlin: 16,
+  MySQL: 17,
+  MongoDB: 18,
+  PHP: 19,
+  GraphQL: 20,
+  Firebase: 21,
+  ReactNative: 22,
+  Unity: 23,
+  Flutter: 24,
+  AWS: 25,
+  Kubernetes: 26,
+  Docker: 27,
+  Git: 28,
+  Figma: 29,
+  Zeplin: 30,
+  Jest: 31,
+  Svelte: 32,
+};
+
+const positionOptions = [
+  "프론트엔드",
+  "백엔드",
+  "디자이너",
+  "IOS",
+  "안드로이드",
+  "데브옵스",
+  "PM",
+  "기획자",
+  "마케터",
+];
+
+// 포지션 ID 매핑 객체
+const positionIdMap: { [key: string]: number } = {
+  프론트엔드: 1,
+  백엔드: 2,
+  디자이너: 3,
+  IOS: 4,
+  안드로이드: 5,
+  데브옵스: 6,
+  PM: 7,
+  기획자: 8,
+  마케터: 9,
+};
+
+const progressMethodOptions = ["온라인", "오프라인", "온라인/오프라인"];
+
+// 진행 방식 enum 매핑
+const progressMethodMap: { [key: string]: string } = {
+  온라인: "ONLINE",
+  오프라인: "OFFLINE",
+  "온라인/오프라인": "ALL",
+};
+
+const cultureFitOptions = [
+  { value: "PRACTICAL", label: "실용주의형" },
+  { value: "DEMOCRATIC", label: "민주주의형" },
+  { value: "AUTONOMOUS", label: "자율주의형" },
+  { value: "COLLABORATIVE", label: "협업주의형" },
+  { value: "STRUCTURED", label: "체계주의형" },
+  { value: "FLEXIBLE", label: "유연주의형" },
+  { value: "COMMUNICATIVE", label: "소통중시형" },
+];
 
 const ProjectSection: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>("전체");
   const [currentPage, setCurrentPage] = useState<number>(0); // API에서는 0부터 시작
   const [posts, setPosts] = useState<Post[]>([]);
   const [totalPages, setTotalPages] = useState<number>(0);
+  const [totalElements, setTotalElements] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const projectsPerPage = 8;
+  const [selectedTechs, setSelectedTechs] = useState<string[]>([]);
+  const [selectedPosition, setSelectedPosition] = useState("");
+  const [selectedProgress, setSelectedProgress] = useState("");
+  const [selectedCulture, setSelectedCulture] = useState("");
+  const [showRecruitingOnly, setShowRecruitingOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // 기술 스택 ID를 찾는 함수
+  const getTechStackId = (techName: string): number | undefined => {
+    const techStack = Object.entries(techStackIdMap).find(
+      ([name]) => name === techName
+    );
+    return techStack ? techStack[1] : undefined;
+  };
+
+  // 포지션 ID를 찾는 함수
+  const getPositionId = (positionName: string): number | undefined => {
+    const position = Object.entries(positionIdMap).find(
+      ([name]) => name === positionName
+    );
+    return position ? position[1] : undefined;
+  };
 
   // API로부터 프로젝트 데이터 가져오기
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
 
+      // 기본 URL 및 쿼리 파라미터
       let url = `/api/v1/posts?page=${currentPage}&size=${projectsPerPage}`;
 
-      // 카테고리 필터링이 필요한 경우 URL 수정
-      if (activeCategory !== "전체") {
-        const recruitType = activeCategory === "프로젝트" ? "PROJECT" : "STUDY";
-        url += `&recruitType=${recruitType}`;
+      // 필터 요청 객체 생성
+      const filterParams: any = {};
+
+      // 검색어 추가
+      if (searchQuery.trim()) {
+        filterParams.keyword = searchQuery.trim();
       }
+
+      // 카테고리 필터링 (전체/프로젝트/스터디)
+      if (activeCategory !== "전체") {
+        filterParams.recruitType =
+          activeCategory === "프로젝트" ? "PROJECT" : "STUDY";
+      }
+
+      // 진행 방식 필터링
+      if (selectedProgress) {
+        filterParams.progressMethod = progressMethodMap[selectedProgress] || "";
+      }
+
+      // 컬처핏 필터링
+      if (selectedCulture) {
+        filterParams.cultureFit = selectedCulture;
+      }
+
+      // 포지션 필터링
+      if (selectedPosition) {
+        const positionId = getPositionId(selectedPosition);
+        if (positionId) {
+          filterParams.positionId = positionId;
+        }
+      }
+
+      // 기술 스택 필터링
+      if (selectedTechs.length > 0) {
+        const techStackIds = selectedTechs
+          .map(getTechStackId)
+          .filter((id): id is number => id !== undefined);
+
+        if (techStackIds.length > 0) {
+          filterParams.techStackIds = techStackIds;
+        }
+      }
+
+      // 모집 중만 보기 필터
+      if (showRecruitingOnly) {
+        filterParams.status = "RECRUITING";
+      }
+
+      // 필터 파라미터 URL에 추가
+      Object.entries(filterParams).forEach(([key, value], index) => {
+        if (Array.isArray(value)) {
+          // 배열 값은 각각 별도의 파라미터로 추가
+          value.forEach((item: any) => {
+            url += `&${key}=${encodeURIComponent(item)}`;
+          });
+        } else {
+          url += `&${key}=${encodeURIComponent(value as string)}`;
+        }
+      });
+
+      console.log("요청 URL:", url);
 
       const response = await fetch(url, {
         method: "GET",
@@ -400,34 +697,49 @@ const ProjectSection: React.FC = () => {
       const data: PostResponse = await response.json();
       setPosts(data.content);
       setTotalPages(data.totalPages);
+      setTotalElements(data.totalElements);
     } catch (error) {
       console.error("프로젝트 데이터를 가져오는 중 오류 발생:", error);
       // 오류 발생 시 빈 배열로 초기화
       setPosts([]);
+      setTotalPages(0);
+      setTotalElements(0);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 페이지 또는 카테고리 변경 시 데이터 가져오기
+  // 검색 실행 함수
+  const handleSearch = () => {
+    // 검색 시 첫 페이지로 이동
+    setCurrentPage(0);
+    fetchPosts();
+  };
+
+  // 필터 변경 시 데이터 새로고침
   useEffect(() => {
     fetchPosts();
-  }, [currentPage, activeCategory]);
+  }, [
+    currentPage,
+    activeCategory,
+    selectedProgress,
+    selectedCulture,
+    selectedPosition,
+    showRecruitingOnly,
+  ]);
 
-  // 카테고리 변경 시 페이지를 0으로 리셋
+  // 기술 스택 필터 변경 시 데이터 새로고침 (디바운스 처리)
   useEffect(() => {
-    setCurrentPage(0);
-  }, [activeCategory]);
+    const timer = setTimeout(() => {
+      if (currentPage === 0) {
+        fetchPosts();
+      } else {
+        setCurrentPage(0); // 페이지를 0으로 변경하면 위의 useEffect에서 자동으로 fetchPosts 호출
+      }
+    }, 300);
 
-  // 페이지 변경 함수
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber - 1); // API는 0부터 시작하므로 1을 빼줌
-    // 페이지 상단으로 스크롤
-    window.scrollTo({
-      top: document.getElementById("project-section")?.offsetTop || 0,
-      behavior: "smooth",
-    });
-  };
+    return () => clearTimeout(timer);
+  }, [selectedTechs]);
 
   // 페이지 번호 생성
   const renderPageNumbers = () => {
@@ -528,6 +840,48 @@ const ProjectSection: React.FC = () => {
     return pageNumbers;
   };
 
+  // 드롭다운 onChange 핸들러
+  const handleTechSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value && !selectedTechs.includes(value)) {
+      setSelectedTechs([...selectedTechs, value]);
+    }
+    // 드롭다운을 다시 "기술 스택"으로 초기화
+    e.target.selectedIndex = 0;
+  };
+
+  // 태그 제거 핸들러
+  const handleRemoveTech = (tech: string) => {
+    setSelectedTechs(selectedTechs.filter((t) => t !== tech));
+  };
+
+  // 검색어 입력 핸들러
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // 엔터 키 누를 때 검색 실행
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // 카테고리 변경 핸들러 함수
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+  };
+
+  // 페이지 변경 함수
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber - 1); // API는 0부터 시작하므로 1을 빼줌
+    // 페이지 상단으로 스크롤
+    window.scrollTo({
+      top: document.getElementById("project-section")?.offsetTop || 0,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <SectionContainer id="project-section">
       <SectionContent>
@@ -538,26 +892,137 @@ const ProjectSection: React.FC = () => {
           </Description>
         </SectionHeader>
 
-        <CategoryTabs>
-          <CategoryTab
+        {/* 상단 카테고리 버튼 - styled-components로 교체 */}
+        <CategoryButtonContainer>
+          <CategoryButton
             active={activeCategory === "전체"}
-            onClick={() => setActiveCategory("전체")}
+            onClick={() => handleCategoryChange("전체")}
           >
             전체
-          </CategoryTab>
-          <CategoryTab
+          </CategoryButton>
+          <CategoryButton
             active={activeCategory === "프로젝트"}
-            onClick={() => setActiveCategory("프로젝트")}
+            onClick={() => handleCategoryChange("프로젝트")}
           >
             프로젝트
-          </CategoryTab>
-          <CategoryTab
+          </CategoryButton>
+          <CategoryButton
             active={activeCategory === "스터디"}
-            onClick={() => setActiveCategory("스터디")}
+            onClick={() => handleCategoryChange("스터디")}
           >
             스터디
-          </CategoryTab>
-        </CategoryTabs>
+          </CategoryButton>
+        </CategoryButtonContainer>
+
+        {/* 필터 바 */}
+        <FilterBar>
+          <FilterSelect onChange={handleTechSelect}>
+            <option value="">기술 스택</option>
+            {techStackOptions
+              .filter((opt) => !selectedTechs.includes(opt))
+              .map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+          </FilterSelect>
+          <FilterSelect
+            value={selectedPosition}
+            onChange={(e) => setSelectedPosition(e.target.value)}
+          >
+            <option value="">포지션</option>
+            {positionOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect
+            value={selectedProgress}
+            onChange={(e) => setSelectedProgress(e.target.value)}
+          >
+            <option value="">진행 방식</option>
+            {progressMethodOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect
+            value={selectedCulture}
+            onChange={(e) => setSelectedCulture(e.target.value)}
+          >
+            <option value="">컬처핏</option>
+            {cultureFitOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </FilterSelect>
+          <ToggleButton
+            active={showRecruitingOnly}
+            onClick={() => setShowRecruitingOnly((v) => !v)}
+          >
+            👀 모집 중만 보기
+          </ToggleButton>
+
+          {/* 검색창 추가 */}
+          <SearchContainer>
+            <SearchInput
+              placeholder="제목, 글 내용을 검색해보세요."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyPress={handleKeyPress}
+            />
+            <SearchIcon onClick={handleSearch}>🔍</SearchIcon>
+          </SearchContainer>
+        </FilterBar>
+
+        {/* 선택된 기술 스택 태그 표시 */}
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+            marginBottom: "16px",
+          }}
+        >
+          {selectedTechs.map((tech) => (
+            <span
+              key={tech}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "#e6fcfa",
+                color: "#00bfae",
+                borderRadius: "16px",
+                padding: "4px 12px",
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              {tech}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveTech(tech);
+                }}
+                style={{
+                  marginLeft: "6px",
+                  background: "none",
+                  border: "none",
+                  color: "#00bfae",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                }}
+                aria-label={`${tech} 제거`}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
 
         {isLoading ? (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
@@ -568,24 +1033,31 @@ const ProjectSection: React.FC = () => {
             해당하는 프로젝트가 없습니다.
           </div>
         ) : (
-          <CardsGrid>
-            {posts.map((post) => (
-              <ProjectCardItem
-                key={post.id}
-                id={post.id}
-                publicId={post.publicId}
-                title={post.title}
-                description={post.content}
-                techStacks={post.techStacks}
-                positions={post.positions}
-                recruitType={post.recruitType}
-                deadline={post.deadline}
-                period={post.period}
-                progressMethod={post.progressMethod}
-                nickname={post.nickname}
-              />
-            ))}
-          </CardsGrid>
+          <>
+            <div
+              style={{ marginBottom: "12px", fontSize: "14px", color: "#666" }}
+            >
+              총 {totalElements}개의 프로젝트
+            </div>
+            <CardsGrid>
+              {posts.map((post) => (
+                <ProjectCardItem
+                  key={post.id}
+                  id={post.id}
+                  publicId={post.publicId}
+                  title={post.title}
+                  description={post.content}
+                  techStacks={post.techStacks}
+                  positions={post.positions}
+                  recruitType={post.recruitType}
+                  deadline={post.deadline}
+                  period={post.period}
+                  progressMethod={post.progressMethod}
+                  nickname={post.nickname}
+                />
+              ))}
+            </CardsGrid>
+          </>
         )}
 
         {totalPages > 0 && <Pagination>{renderPageNumbers()}</Pagination>}

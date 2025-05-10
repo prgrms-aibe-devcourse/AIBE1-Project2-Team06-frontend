@@ -660,6 +660,7 @@ interface TeamMember {
   id: number;
   postId: number;
   memberId: number;
+  publicId: string;
   nickname: string;
   isOwner: boolean;
   createdAt: string;
@@ -958,7 +959,7 @@ const ProjectDetailPage: React.FC = () => {
   };
 
   // 피어리뷰 제출
-  const handleReviewSubmit = () => {
+  const handleReviewSubmit = async () => {
     if (!selectedTeamMember) {
       alert("평가할 팀원을 선택해주세요.");
       return;
@@ -978,27 +979,63 @@ const ProjectDetailPage: React.FC = () => {
       return;
     }
 
+    // 리뷰 대상 id 찾기
+    const reviewee = existingTeamMembers.find(
+      (m) => m.nickname === selectedTeamMember
+    );
+    if (!reviewee) {
+      alert("리뷰 대상 팀원 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    if (!reviewee.publicId) {
+      alert("리뷰 대상 팀원의 publicId가 없습니다.");
+      return;
+    }
+
+    // 토큰 준비
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     // 리뷰 데이터 생성
     const reviewData = {
-      teamMember: selectedTeamMember,
-      ratings: {
-        collaboration: collaborationRating,
-        technical: technicalRating,
-        reCollaboration: reCollaborationRating,
-      },
-      comment: reviewComment,
+      postId: Number(id),
+      revieweeUserId: reviewee.publicId,
+      collaborationScore: collaborationRating,
+      technicalScore: technicalRating,
+      workAgainScore: reCollaborationRating,
+      reviewComment: reviewComment,
     };
 
-    // 실제로는 API를 호출하여 서버에 리뷰 데이터 저장
-    console.log("리뷰 데이터:", reviewData);
-    alert(`${selectedTeamMember}님에 대한 피어 리뷰가 제출되었습니다.`);
+    console.log("피어리뷰 요청 데이터:", reviewData);
 
-    // 폼 초기화
-    setSelectedTeamMember("");
-    setCollaborationRating(null);
-    setTechnicalRating(null);
-    setReCollaborationRating(null);
-    setReviewComment("");
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/v1/peer-reviews",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(reviewData),
+        }
+      );
+      if (!response.ok) throw new Error("리뷰 제출 실패");
+      alert(`${selectedTeamMember}님에 대한 피어 리뷰가 제출되었습니다.`);
+      // 폼 초기화
+      setSelectedTeamMember("");
+      setCollaborationRating(null);
+      setTechnicalRating(null);
+      setReCollaborationRating(null);
+      setReviewComment("");
+      setIsPeerReviewModalOpen(false);
+    } catch (e) {
+      alert("리뷰 제출 중 오류가 발생했습니다.");
+    }
   };
 
   // 숫자 범위 배열 생성 함수
@@ -1284,7 +1321,12 @@ const ProjectDetailPage: React.FC = () => {
             수정하기
           </Button>
           <Button onClick={handleTeamModalOpen}>팀원 관리</Button>
-          <Button onClick={() => setIsPeerReviewModalOpen(true)}>
+          <Button
+            onClick={() => {
+              fetchTeamMembers();
+              setIsPeerReviewModalOpen(true);
+            }}
+          >
             피어리뷰 작성
           </Button>
           <Button primary onClick={() => setIsCultureFitOpen(true)}>
@@ -1390,9 +1432,9 @@ const ProjectDetailPage: React.FC = () => {
                   onChange={(e) => setSelectedTeamMember(e.target.value)}
                 >
                   <option value="">평가할 팀원을 선택하세요</option>
-                  {teamMembers.map((member, index) => (
-                    <option key={index} value={member}>
-                      {member}
+                  {existingTeamMembers.map((member) => (
+                    <option key={member.memberId} value={member.nickname}>
+                      {member.nickname}
                     </option>
                   ))}
                 </Select>
