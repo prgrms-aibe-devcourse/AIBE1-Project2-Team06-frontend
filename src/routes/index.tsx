@@ -6,6 +6,7 @@ import SettingPage from "../pages/SettingPage";
 import ProjectDetailPage from "../pages/ProjectDetailPage";
 import MyPage from "../pages/MyPage";
 import RecruitFormPage from "../pages/RecruitFormPage";
+import ProfilePage from "../pages/ProfilePage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -15,6 +16,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/settings" element={<SettingPage />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/project/:id" element={<ProjectDetailPage />} />
+      <Route path="/profile/:publicId" element={<ProfilePage />} />
       {/* 추후 추가될 라우트들 */}
       <Route path="/projects" element={<div>프로젝트 페이지 (준비중)</div>} />
       <Route path="/teams" element={<Navigate to="/recruit" replace />} />

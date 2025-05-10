@@ -245,6 +245,7 @@ const PageNumber = styled.button<{ active?: boolean }>`
 
 interface ProjectCardItemProps {
   id: number;
+  publicId: string;
   title: string;
   description?: string;
   techStacks?: { id: number; name: string }[];
@@ -258,6 +259,7 @@ interface ProjectCardItemProps {
 
 const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
   id,
+  publicId,
   title,
   description,
   techStacks = [],
@@ -275,6 +277,11 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
 
   const handleClick = () => {
     navigate(`/project/${id}`);
+  };
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/profile/${publicId}`);
   };
 
   return (
@@ -295,20 +302,17 @@ const ProjectCardItem: React.FC<ProjectCardItemProps> = ({
         </CardFilter>
         <CardDivider />
         <CardFooter>
-          <Link
-            to="/mypage"
-            style={{ textDecoration: "none" }}
-            onClick={(e) => e.stopPropagation()}
+          <AuthorInfo
+            style={{ cursor: "pointer" }}
+            onClick={handleProfileClick}
           >
-            <AuthorInfo style={{ cursor: "pointer" }}>
-              <AuthorAvatar>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#8ED11E">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
-                </svg>
-              </AuthorAvatar>
-              <AuthorName>{nickname}</AuthorName>
-            </AuthorInfo>
-          </Link>
+            <AuthorAvatar>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#8ED11E">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+              </svg>
+            </AuthorAvatar>
+            <AuthorName>{nickname}</AuthorName>
+          </AuthorInfo>
         </CardFooter>
       </CardContent>
     </ProjectCardWrapper>
@@ -569,6 +573,7 @@ const ProjectSection: React.FC = () => {
               <ProjectCardItem
                 key={post.id}
                 id={post.id}
+                publicId={post.publicId}
                 title={post.title}
                 description={post.content}
                 techStacks={post.techStacks}
