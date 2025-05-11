@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { fetchAPI } from "../config/apiConfig";
 
 // 전체 컨테이너
 const PageContainer = styled.div`
@@ -437,34 +438,24 @@ const SettingPage: React.FC = () => {
 
   // API로 사용자 프로필 데이터 가져오기
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchProfileData = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          throw new Error("인증 토큰이 없습니다");
-        }
-
-        console.log("설정 페이지 API 호출 시작...");
-
-        // 상대 경로 사용
-        const response = await fetch("/api/v1/members/profile/me", {
+        setLoading(true);
+        const response = await fetchAPI("members/profile/me", {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
         });
 
-        console.log("API 응답 상태:", response.status, response.statusText);
-
         if (!response.ok) {
-          throw new Error("프로필 정보를 가져오는데 실패했습니다");
+          if (response.status === 401) {
+            alert("로그인이 필요합니다.");
+            navigate("/");
+            return;
+          }
+          throw new Error("프로필 정보를 불러오는데 실패했습니다.");
         }
 
         const data = await response.json();
-        console.log("API 응답 데이터:", data);
+        console.log("Fetched profile data:", data);
 
         // 응답 값이 비어있거나 "UNDEFINED" 문자열일 경우 처리
         const formatValue = (value: string | null | undefined): string => {
@@ -489,18 +480,16 @@ const SettingPage: React.FC = () => {
         if (Array.isArray(data.techStacks) && data.techStacks.length > 0) {
           setTags(data.techStacks);
         }
-      } catch (err) {
-        console.error("프로필 로딩 오류:", err);
-        setError(
-          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다"
-        );
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setError("프로필 정보를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProfile();
-  }, []);
+    fetchProfileData();
+  }, [navigate]);
 
   // 폼 제출 처리
   const handleSubmit = async (e: React.FormEvent) => {
@@ -534,12 +523,6 @@ const SettingPage: React.FC = () => {
       setIsSaving(true);
       setSaveSuccess(false);
 
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        throw new Error("인증 토큰이 없습니다");
-      }
-
       // 포지션 ID와 기술스택 ID 변환
       const positionId = positionIdMap[position] || 0;
       const techStackIds = tags
@@ -557,14 +540,9 @@ const SettingPage: React.FC = () => {
 
       console.log("프로필 저장 요청 데이터:", profileData);
 
-      const response = await fetch("/api/v1/members/profile", {
+      const response = await fetchAPI("members/profile", {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(profileData),
-        credentials: "include",
       });
 
       if (!response.ok) {

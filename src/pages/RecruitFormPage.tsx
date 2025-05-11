@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import { useNavigate } from "react-router-dom";
+import { fetchAPI } from "../config/apiConfig";
 
 // 섹션 타이틀
 const SectionTitle = styled.h2`
@@ -422,22 +423,9 @@ const RecruitFormPage: React.FC = () => {
         positionIds: positionIds,
       };
 
-      // 토큰 가져오기
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("로그인이 필요합니다.");
-        navigate("/");
-        return;
-      }
-
       // API 요청
-      const response = await fetch("/api/v1/posts", {
+      const response = await fetchAPI("posts", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-USER-ID": "1",
-        },
         body: JSON.stringify(postData),
       });
 

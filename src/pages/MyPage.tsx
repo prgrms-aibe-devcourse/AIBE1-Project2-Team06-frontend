@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { NavLink, useNavigate } from "react-router-dom";
 import { brandColors } from "../styles/GlobalStyle";
+import { fetchAPI } from "../config/apiConfig";
 
 // 페이지 컨테이너
 const PageContainer = styled.div`
@@ -406,32 +408,24 @@ const MyPage: React.FC = () => {
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
+        setLoading(true);
 
-        if (!token) {
-          throw new Error("인증 토큰이 없습니다");
-        }
-
-        console.log("API 호출 시작...");
-
-        // 절대 경로 대신 상대 경로 사용
-        const response = await fetch("/api/v1/members/profile/me", {
+        const response = await fetchAPI("members/profile/me", {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // 쿠키 포함 설정 추가
         });
 
-        console.log("API 응답 상태:", response.status, response.statusText);
-
         if (!response.ok) {
-          throw new Error("프로필 정보를 가져오는데 실패했습니다");
+          if (response.status === 401) {
+            alert("로그인이 필요합니다.");
+            navigate("/");
+            return;
+          }
+          throw new Error("프로필 정보를 불러오는데 실패했습니다.");
         }
 
         const data = await response.json();
@@ -465,18 +459,16 @@ const MyPage: React.FC = () => {
 
         console.log("가공된 데이터:", safeData);
         setUserData(safeData);
-      } catch (err) {
-        console.error("프로필 로딩 오류:", err);
-        setError(
-          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다"
-        );
+      } catch (error) {
+        console.error("프로필 로딩 오류:", error);
+        setError("프로필 정보를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserProfile();
-  }, []);
+  }, [navigate]);
 
   const handleReviewClick = (
     type: "project" | "study",

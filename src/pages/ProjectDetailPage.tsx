@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
 import { brandColors } from "../styles/GlobalStyle";
+import { fetchAPI } from "../config/apiConfig";
 
 // 페이지 컨테이너
 const PageContainer = styled.div`
@@ -732,11 +733,8 @@ const ProjectDetailPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/v1/posts/${id}`, {
+        const response = await fetchAPI(`posts/${id}`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
         });
 
         if (!response.ok) {
@@ -860,15 +858,9 @@ const ProjectDetailPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/members/profile/${searchKeyword}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetchAPI(`members/profile/${searchKeyword}`, {
+        method: "GET",
+      });
 
       if (!response.ok) {
         throw new Error("검색 결과를 가져오는데 실패했습니다.");
@@ -927,20 +919,13 @@ const ProjectDetailPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/posts/${id}/members`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            postId: parseInt(id),
-            nicknames: teamMembers,
-          }),
-        }
-      );
+      const response = await fetchAPI(`posts/${id}/members`, {
+        method: "POST",
+        body: JSON.stringify({
+          postId: parseInt(id),
+          nicknames: teamMembers,
+        }),
+      });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -993,13 +978,6 @@ const ProjectDetailPage: React.FC = () => {
       return;
     }
 
-    // 토큰 준비
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
     // 리뷰 데이터 생성
     const reviewData = {
       postId: Number(id),
@@ -1013,17 +991,10 @@ const ProjectDetailPage: React.FC = () => {
     console.log("피어리뷰 요청 데이터:", reviewData);
 
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/v1/peer-reviews",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(reviewData),
-        }
-      );
+      const response = await fetchAPI("peer-reviews", {
+        method: "POST",
+        body: JSON.stringify(reviewData),
+      });
       if (!response.ok) throw new Error("리뷰 제출 실패");
       alert(`${selectedTeamMember}님에 대한 피어 리뷰가 제출되었습니다.`);
       // 폼 초기화
@@ -1072,21 +1043,9 @@ const ProjectDetailPage: React.FC = () => {
         }
       });
 
-      // 토큰 가져오기
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("로그인이 필요합니다.");
-        return;
-      }
-
       // API 호출
-      const response = await fetch(`/api/v1/culture-fit/${id}/recommend`, {
+      const response = await fetchAPI(`culture-fit/${id}/recommend`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-USER-ID": "1", // 실제 구현 시 사용자 ID를 동적으로 가져와야 함
-        },
         body: JSON.stringify(cultureFitData),
       });
 
@@ -1135,15 +1094,9 @@ const ProjectDetailPage: React.FC = () => {
     if (!id) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/posts/${id}/members`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetchAPI(`posts/${id}/members`, {
+        method: "GET",
+      });
 
       if (!response.ok) {
         throw new Error("팀원 정보를 가져오는데 실패했습니다.");
@@ -1168,17 +1121,10 @@ const ProjectDetailPage: React.FC = () => {
   const handleDelete = async () => {
     if (!window.confirm("정말로 이 프로젝트를 삭제하시겠습니까?")) return;
     if (!id) return;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
+
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/posts/${id}`, {
+      const response = await fetchAPI(`posts/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
       if (!response.ok) throw new Error("삭제 실패");
       alert("삭제가 완료되었습니다.");
@@ -1190,23 +1136,12 @@ const ProjectDetailPage: React.FC = () => {
 
   const handleComplete = async () => {
     if (!id) return;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
+
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/posts/${id}/complete`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ githubLink }),
-        }
-      );
+      const response = await fetchAPI(`posts/${id}/complete`, {
+        method: "PATCH",
+        body: JSON.stringify({ githubLink }),
+      });
       if (!response.ok) throw new Error("모집 완료 처리 실패");
       alert("모집이 완료되었습니다.");
       setIsCompleteModalOpen(false);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { fetchAPI } from "../config/apiConfig";
 
 // 페이지 컨테이너
 const PageContainer = styled.div`
@@ -249,8 +250,11 @@ const ProfilePage: React.FC = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `http://localhost:8080/api/v1/members/profile/public-id/${publicId}`
+        const response = await fetchAPI(
+          `members/profile/public-id/${publicId}`,
+          {
+            method: "GET",
+          }
         );
 
         if (!response.ok) {

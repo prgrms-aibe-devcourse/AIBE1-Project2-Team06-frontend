@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import { useNavigate, useParams } from "react-router-dom";
+import { fetchAPI } from "../config/apiConfig";
 
 // 섹션 타이틀
 const SectionTitle = styled.h2`
@@ -315,17 +316,25 @@ const RecruitEditPage: React.FC = () => {
     startDate: "",
     endDate: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchRecruitData = async () => {
+      if (!id) return;
+
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/v1/posts/${id}`
-        );
+        setLoading(true);
+        const response = await fetchAPI(`posts/${id}`, {
+          method: "GET",
+        });
+
         if (!response.ok) {
-          throw new Error("모집글 데이터를 불러오는데 실패했습니다.");
+          throw new Error("모집글 데이터를 가져오는데 실패했습니다.");
         }
+
         const data = await response.json();
+        console.log("불러온 모집글 데이터:", data);
 
         // 모집 인원 변환
         let peopleValue =
@@ -372,16 +381,15 @@ const RecruitEditPage: React.FC = () => {
           endDate: data.deadline,
         });
       } catch (error) {
-        console.error("모집글 데이터를 불러오는데 실패했습니다:", error);
-        alert("모집글 데이터를 불러오는데 실패했습니다.");
-        navigate("/recruits");
+        console.error("모집글 데이터 로딩 오류:", error);
+        setError("모집글 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (id) {
-      fetchRecruitData();
-    }
-  }, [id, navigate]);
+    fetchRecruitData();
+  }, [id]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -430,36 +438,21 @@ const RecruitEditPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 모집 인원 변환
-    let recruitMember = 0;
-    if (formData.people === "10명 이상") {
-      recruitMember = 10;
-    } else {
-      recruitMember = parseInt(formData.people.replace("명", ""), 10);
-    }
-
-    // 모집 구분 변환
-    let recruitType =
-      formData.type === "스터디"
-        ? "STUDY"
-        : formData.type === "프로젝트"
-        ? "PROJECT"
-        : "PROJECT";
-
-    // 토큰 준비
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
     try {
       // 기존 데이터 구조에 맞게 요청 본문 생성
       const requestData = {
         title: formData.title,
         content: formData.content,
-        recruitType: recruitType,
-        recruitMember: recruitMember,
+        recruitType:
+          formData.type === "스터디"
+            ? "STUDY"
+            : formData.type === "프로젝트"
+            ? "PROJECT"
+            : "PROJECT",
+        recruitMember:
+          formData.people === "10명 이상"
+            ? 10
+            : parseInt(formData.people.replace("명", ""), 10),
         progressMethod: progressMethodMap[formData.progressMethod],
         period: periodMap[formData.period],
         deadline: formData.endDate,
@@ -476,12 +469,8 @@ const RecruitEditPage: React.FC = () => {
 
       console.log("PUT 요청 데이터:", requestData);
 
-      const response = await fetch(`http://localhost:8080/api/v1/posts/${id}`, {
+      const response = await fetchAPI(`posts/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(requestData),
       });
 

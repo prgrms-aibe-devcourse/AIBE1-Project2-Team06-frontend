@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import LoginModal from "./LoginModal";
+import { API_BASE_URL, fetchAPI } from "../config/apiConfig";
 
 const HeaderContainer = styled.header`
   width: 100%;
@@ -445,25 +446,17 @@ const Header: React.FC = () => {
         }
       });
 
-      // 토큰 가져오기
-      const token = localStorage.getItem("token");
-      if (!token) {
+      // 토큰이 없는 경우 처리
+      if (!localStorage.getItem("token")) {
         alert("로그인이 필요합니다.");
         return;
       }
 
-      // API 호출
-      const response = await fetch(
-        "http://localhost:8080/api/v1/culture-fit/preview",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(cultureFitData),
-        }
-      );
+      // API 호출 (환경에 따른 URL 적용)
+      const response = await fetchAPI("culture-fit/preview", {
+        method: "POST",
+        body: JSON.stringify(cultureFitData),
+      });
 
       if (!response.ok) {
         throw new Error(`서버 오류: ${response.status}`);
