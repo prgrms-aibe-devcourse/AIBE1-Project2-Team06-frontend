@@ -5,7 +5,10 @@ import { brandColors } from "../styles/GlobalStyle";
 // 카카오 인증 관련 상수
 // 환경 변수에서 값을 가져오거나 기본값 사용
 const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;
-const REDIRECT_URI = window.location.origin + "/auth/kakao/callback";
+const KAKAO_REDIRECT_URI =
+  process.env.NODE_ENV === "production"
+    ? "https://aibe-eum.store/auth/kakao/callback"
+    : "http://localhost:3000/auth/kakao/callback";
 
 // 모달 배경
 const ModalOverlay = styled.div`
@@ -131,7 +134,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
     // 간단한 URL 구성 (필수 파라미터만 포함)
     const redirectUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
+      KAKAO_REDIRECT_URI
     )}&response_type=code`;
 
     // 현재 창에서 리다이렉트 (페이지 교체)
