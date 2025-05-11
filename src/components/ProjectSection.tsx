@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import { useNavigate, Link } from "react-router-dom";
+import { fetchAPI } from "../config/apiConfig";
 // import { FaThumbsUp } from 'react-icons/fa';
 // import { GoComment } from 'react-icons/go';
 
@@ -619,7 +620,7 @@ const ProjectSection: React.FC = () => {
       setIsLoading(true);
 
       // 기본 URL 및 쿼리 파라미터
-      let url = `/api/v1/posts?page=${currentPage}&size=${projectsPerPage}`;
+      let url = `posts?page=${currentPage}&size=${projectsPerPage}`;
 
       // 필터 요청 객체 생성
       const filterParams: any = {};
@@ -683,11 +684,8 @@ const ProjectSection: React.FC = () => {
 
       console.log("요청 URL:", url);
 
-      const response = await fetch(url, {
+      const response = await fetchAPI(url, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
 
       if (!response.ok) {

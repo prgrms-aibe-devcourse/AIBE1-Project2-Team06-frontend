@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { brandColors } from "../../styles/GlobalStyle";
+import { fetchAPI } from "../../config/apiConfig";
 
 // 백엔드 요청 형식 간소화
 interface LoginRequestDto {
@@ -104,8 +105,7 @@ const KakaoCallback = () => {
           provider: "kakao",
         };
 
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
-        const response = await fetch(`${API_BASE_URL}/api/v1/login`, {
+        const response = await fetchAPI("login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
