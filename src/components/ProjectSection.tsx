@@ -574,13 +574,12 @@ const progressMethodMap: { [key: string]: string } = {
 };
 
 const cultureFitOptions = [
-  { value: "PRACTICAL", label: "실용주의형" },
-  { value: "DEMOCRATIC", label: "민주주의형" },
-  { value: "AUTONOMOUS", label: "자율주의형" },
-  { value: "COLLABORATIVE", label: "협업주의형" },
-  { value: "STRUCTURED", label: "체계주의형" },
-  { value: "FLEXIBLE", label: "유연주의형" },
-  { value: "COMMUNICATIVE", label: "소통중시형" },
+  { value: "AUTONOMOUS", label: "자율형" },
+  { value: "PLANNER", label: "계획형" },
+  { value: "COMMUNICATIVE", label: "소통 협업형" },
+  { value: "PRACTICAL", label: "실용 협업형" },
+  { value: "HARMONY", label: "조화 중시형" },
+  { value: "DIRECTIVE", label: "지시 기반형" },
 ];
 
 const ProjectSection: React.FC = () => {
