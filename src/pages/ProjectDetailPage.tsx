@@ -1534,30 +1534,48 @@ const ProjectDetailPage: React.FC = () => {
               <div
                 style={{
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
                   marginBottom: "16px",
                 }}
               >
-                <h3
-                  style={{
-                    fontSize: "20px",
-                    color: brandColors.primary,
-                    margin: 0,
-                  }}
-                >
-                  당신의 컬처핏 유형:
-                </h3>
-                <span
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "20px",
-                    marginLeft: "12px",
-                    color: brandColors.primaryDark,
-                  }}
-                >
-                  {cultureFitTypeDescription[cultureResult.cultureFitType] ||
-                    cultureResult.cultureFitType}
-                </span>
+                <div style={{ marginBottom: "20px", textAlign: "center" }}>
+                  <img
+                    src={`/images/${cultureResult.cultureFitType}.jpg`}
+                    alt={`${
+                      cultureFitTypeDescription[cultureResult.cultureFitType]
+                    } 이미지`}
+                    style={{
+                      width: "200px",
+                      height: "200px",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                      border: `3px solid ${brandColors.primary}`,
+                    }}
+                  />
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <span
+                    style={{
+                      fontSize: "20px",
+                      color: brandColors.primary,
+                      margin: "0 0 8px 0",
+                      display: "block",
+                    }}
+                  >
+                    당신의 컬처핏 유형:
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: "24px",
+                      color: brandColors.primaryDark,
+                    }}
+                  >
+                    {cultureFitTypeDescription[cultureResult.cultureFitType] ||
+                      cultureResult.cultureFitType}
+                  </span>
+                </div>
               </div>
               <div
                 style={{
