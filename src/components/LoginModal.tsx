@@ -7,7 +7,7 @@ import { brandColors } from "../styles/GlobalStyle";
 const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;
 const KAKAO_REDIRECT_URI =
   process.env.REACT_APP_KAKAO_REDIRECT_URI ||
-  "http://localhost:3000/auth/kakao/callback";
+  window.location.origin + "/auth/kakao/callback";
 
 // 모달 배경
 const ModalOverlay = styled.div`

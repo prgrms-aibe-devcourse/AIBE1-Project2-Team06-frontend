@@ -72,10 +72,24 @@ const Button = styled.button`
   }
 `;
 
+const ErrorDetails = styled.div`
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  text-align: left;
+  max-width: 100%;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 12px;
+  color: #555;
+`;
+
 const KakaoCallback = () => {
   const [status, setStatus] = useState<string>("인증 코드 확인 중...");
   const [isError, setIsError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [errorDetails, setErrorDetails] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -86,6 +100,15 @@ const KakaoCallback = () => {
   useEffect(() => {
     const processKakaoLogin = async () => {
       try {
+        // 현재 URL 및 환경 정보 로깅
+        console.log("현재 콜백 URL:", window.location.href);
+        console.log("환경 변수:", {
+          REACT_APP_API_URL: process.env.REACT_APP_API_URL,
+          REACT_APP_KAKAO_REDIRECT_URI:
+            process.env.REACT_APP_KAKAO_REDIRECT_URI,
+          NODE_ENV: process.env.NODE_ENV,
+        });
+
         // URL에서 인가 코드만 추출
         const params = new URLSearchParams(location.search);
         const code = params.get("code");
@@ -105,6 +128,8 @@ const KakaoCallback = () => {
           provider: "kakao",
         };
 
+        console.log("백엔드 요청 데이터:", loginRequestDto);
+
         const response = await fetchAPI("login", {
           method: "POST",
           headers: {
@@ -114,7 +139,16 @@ const KakaoCallback = () => {
         });
 
         if (!response.ok) {
-          throw new Error(`서버 응답 오류: ${response.status}`);
+          const errorText = await response
+            .text()
+            .catch(() => "응답 텍스트를 가져올 수 없음");
+          console.error("로그인 API 오류:", {
+            status: response.status,
+            statusText: response.statusText,
+            errorText,
+          });
+
+          throw new Error(`서버 응답 오류: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
@@ -145,11 +179,22 @@ const KakaoCallback = () => {
       } catch (error) {
         console.error("카카오 로그인 오류:", error);
         setIsError(true);
-        setErrorMessage(
+
+        const errorMsg =
           error instanceof Error
             ? error.message
-            : "알 수 없는 오류가 발생했습니다."
-        );
+            : "알 수 없는 오류가 발생했습니다.";
+        setErrorMessage(errorMsg);
+
+        // 상세 오류 정보 설정
+        setErrorDetails(`
+현재 URL: ${window.location.href}
+API URL: ${process.env.REACT_APP_API_URL || "(설정되지 않음)"}
+리다이렉트 URI: ${process.env.REACT_APP_KAKAO_REDIRECT_URI || "(설정되지 않음)"}
+오류 시간: ${new Date().toLocaleString()}
+오류 메시지: ${errorMsg}
+        `);
+
         setStatus("로그인 처리 중 오류가 발생했습니다.");
       }
     };
@@ -170,6 +215,7 @@ const KakaoCallback = () => {
           <Title>로그인 오류</Title>
           <Status>{status}</Status>
           <Message>{errorMessage}</Message>
+          {errorDetails && <ErrorDetails>{errorDetails}</ErrorDetails>}
           <Button onClick={goToHome}>홈으로 돌아가기</Button>
         </>
       )}
