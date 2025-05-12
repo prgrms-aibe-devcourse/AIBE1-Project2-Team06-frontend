@@ -164,7 +164,40 @@ const KakaoCallback = () => {
 
         // 로그인 성공 처리
         if (data.token) {
-          localStorage.setItem("token", data.token);
+          console.log("받은 토큰:", data.token);
+
+          // 토큰 저장 전 확인
+          try {
+            localStorage.removeItem("token"); // 기존 토큰 제거
+            localStorage.setItem("token", data.token);
+
+            // 토큰이 제대로 저장되었는지 확인
+            const savedToken = localStorage.getItem("token");
+            console.log(
+              "저장된 토큰 확인:",
+              savedToken ? "저장됨" : "저장 실패",
+              savedToken === data.token ? "일치함" : "불일치"
+            );
+
+            // 테스트 API 호출로 토큰 유효성 검증
+            const testRequest = await fetchAPI("/members/profile/me", {
+              method: "GET",
+            });
+
+            console.log("프로필 API 응답:", {
+              status: testRequest.status,
+              ok: testRequest.ok,
+              statusText: testRequest.statusText,
+            });
+
+            if (!testRequest.ok) {
+              console.warn("프로필 조회 실패, 토큰 문제일 수 있음");
+            } else {
+              console.log("프로필 조회 성공, 토큰 정상");
+            }
+          } catch (storageError) {
+            console.error("토큰 저장 오류:", storageError);
+          }
 
           // 커스텀 이벤트 발생 - 로그인 성공 알림
           const loginEvent = new Event("login-success");

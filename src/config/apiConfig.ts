@@ -12,6 +12,19 @@ console.log("Current NODE_ENV:", process.env.NODE_ENV);
 export const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
   const token = localStorage.getItem("token");
 
+  // 토큰 디버깅
+  if (endpoint.includes("profile") || endpoint === "login") {
+    console.log(`API 요청 정보 (${endpoint}):`, {
+      token: token ? "존재함" : "없음",
+      tokenLength: token ? token.length : 0,
+      url: endpoint.startsWith("http")
+        ? endpoint
+        : `${API_BASE_URL}${
+            endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+          }`,
+    });
+  }
+
   const headers = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -21,6 +34,11 @@ export const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
   const url = endpoint.startsWith("http")
     ? endpoint
     : `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+
+  // 중요한 요청의 경우 헤더 정보 로깅
+  if (endpoint.includes("profile") || endpoint === "login") {
+    console.log(`요청 헤더 (${endpoint}):`, headers);
+  }
 
   return fetch(url, {
     ...options,
