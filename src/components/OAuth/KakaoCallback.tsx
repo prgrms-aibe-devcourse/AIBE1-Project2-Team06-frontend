@@ -109,6 +109,14 @@ const KakaoCallback = () => {
           NODE_ENV: process.env.NODE_ENV,
         });
 
+        // 배포 환경 여부 확인
+        const isNetlify =
+          navigator.userAgent.includes("Netlify") ||
+          document.location.hostname.includes("netlify.app") ||
+          document.location.hostname === "aibe-eum.store";
+
+        console.log("배포 환경 감지:", isNetlify);
+
         // URL에서 인가 코드만 추출
         const params = new URLSearchParams(location.search);
         const code = params.get("code");
