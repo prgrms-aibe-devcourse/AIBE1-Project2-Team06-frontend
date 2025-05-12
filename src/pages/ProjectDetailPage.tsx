@@ -961,7 +961,7 @@ const ProjectDetailPage: React.FC = () => {
       return;
     }
 
-    // 리뷰 대상 id 찾기
+    // 리뷰 대상 찾기
     const reviewee = existingTeamMembers.find(
       (m) => m.nickname === selectedTeamMember
     );
@@ -978,7 +978,7 @@ const ProjectDetailPage: React.FC = () => {
     // 리뷰 데이터 생성
     const reviewData = {
       postId: Number(id),
-      revieweeUserId: reviewee.publicId,
+      revieweePublicId: reviewee.publicId,
       collaborationScore: collaborationRating,
       technicalScore: technicalRating,
       workAgainScore: reCollaborationRating,
