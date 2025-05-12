@@ -1,9 +1,5 @@
 // API URL 설정
-export const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://eum.o-r.kr/api/v1"
-    : "https://eum.o-r.kr/api/v1");
+export const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 console.log("Current API URL:", API_BASE_URL);
 console.log("Current NODE_ENV:", process.env.NODE_ENV);

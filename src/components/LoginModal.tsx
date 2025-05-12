@@ -6,9 +6,8 @@ import { brandColors } from "../styles/GlobalStyle";
 // 환경 변수에서 값을 가져오거나 기본값 사용
 const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;
 const KAKAO_REDIRECT_URI =
-  process.env.NODE_ENV === "production"
-    ? "https://aibe-eum.store/auth/kakao/callback"
-    : "http://localhost:3000/auth/kakao/callback";
+  process.env.REACT_APP_KAKAO_REDIRECT_URI ||
+  "http://localhost:3000/auth/kakao/callback";
 
 // 모달 배경
 const ModalOverlay = styled.div`
