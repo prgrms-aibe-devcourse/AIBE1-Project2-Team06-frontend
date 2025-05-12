@@ -1265,7 +1265,9 @@ const ProjectDetailPage: React.FC = () => {
             컬처핏 등록
           </Button>
           <CompleteButton onClick={() => setIsCompleteModalOpen(true)}>
-            모집 완료
+            {projectData.recruitType === "STUDY"
+              ? "스터디 종료"
+              : "프로젝트 종료"}
           </CompleteButton>
           <DangerButton onClick={handleDelete}>삭제</DangerButton>
         </ButtonRightGroup>
@@ -1642,7 +1644,11 @@ const ProjectDetailPage: React.FC = () => {
             <ModalClose onClick={() => setIsCompleteModalOpen(false)}>
               &times;
             </ModalClose>
-            <ModalTitle>모집 완료 처리</ModalTitle>
+            <ModalTitle>
+              {projectData.recruitType === "STUDY"
+                ? "스터디 종료"
+                : "프로젝트 종료"}
+            </ModalTitle>
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontWeight: 500, fontSize: 15 }}>
                 깃허브 링크
