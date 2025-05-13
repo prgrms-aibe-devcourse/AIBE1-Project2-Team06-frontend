@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 
 const BannerWrapper = styled.div`
@@ -82,14 +82,13 @@ const ImageArea = styled.div`
   align-items: center;
 `;
 
-const ChatImage = styled.div`
+// ChatImage 컴포넌트 대신 실제 이미지를 표시하는 컴포넌트로 변경
+const BannerImage = styled.img`
   width: 280px;
   height: 180px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M20,2H4C2.9,2,2,2.9,2,4v18l4-4h14c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  opacity: 0.8;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 `;
 
 const PageIndicator = styled.div`
@@ -102,6 +101,7 @@ const PageIndicator = styled.div`
   background-color: white;
   padding: 4px 12px;
   border-radius: 20px;
+  z-index: 10;
 `;
 
 const NavButton = styled.button`
@@ -117,10 +117,50 @@ const NavButton = styled.button`
   }
 `;
 
-// 새로 추가: 자동 슬라이드를 위한 애니메이션 스타일
-const BannerSlide = styled.div<{ active: boolean }>`
+// 슬라이드 애니메이션 정의
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
+
+const fadeOut = keyframes`
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+`;
+
+// 애니메이션이 적용된 슬라이드 컴포넌트
+const BannerSlide = styled.div<{
+  active: boolean;
+  direction: "next" | "prev" | null;
+}>`
   display: ${(props) => (props.active ? "block" : "none")};
   width: 100%;
+
+  ${(props) =>
+    props.active &&
+    props.direction === "next" &&
+    css`
+      animation: ${fadeIn} 0.5s ease-out forwards;
+    `}
+
+  ${(props) =>
+    props.active &&
+    props.direction === "prev" &&
+    css`
+      animation: ${fadeIn} 0.5s ease-out forwards;
+    `}
 `;
 
 // 배너 데이터
@@ -129,25 +169,30 @@ const bannerData = [
     tag: "NOTICE",
     title: "나에게 딱 맞는 팀원을 찾고 있나요?",
     description: "프론트엔드부터 기획자까지, Eum에서 만나요 👩‍💻🤝👨‍🎨",
+    image: "/images/banner1.jpg",
   },
   {
     tag: "NOTICE",
     title: "협업이 필요한 순간, Eum",
     description: "디자이너, 개발자, 마케터가 함께 만드는 프로젝트의 시작 🚀",
+    image: "/images/banner2.jpg",
   },
   {
-    tag: "NOTICE",
-    title: "IT 행사 정보도 Eum에서!",
-    description: "공모전, 컨퍼런스, 해커톤, 부트캠프까지 한번에 🌱",
+    tag: "NEW",
+    title: "AI가 분석하는 팀 컬처핏 매칭",
+    description: "나와 가치관이 맞는 팀원을 AI 알고리즘으로 찾아보세요 🧠✨",
+    image: "/images/banner3.jpg",
   },
 ];
 
 const Banner: React.FC = () => {
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [direction, setDirection] = useState<"next" | "prev" | null>(null);
 
   // 자동 슬라이드 기능
   useEffect(() => {
     const interval = setInterval(() => {
+      setDirection("next");
       setCurrentBanner((prev) => (prev + 1) % bannerData.length);
     }, 5000); // 5초마다 슬라이드 변경
 
@@ -156,11 +201,13 @@ const Banner: React.FC = () => {
 
   // 이전 배너로 이동
   const handlePrevBanner = () => {
+    setDirection("prev");
     setCurrentBanner((prev) => (prev === 0 ? bannerData.length - 1 : prev - 1));
   };
 
   // 다음 배너로 이동
   const handleNextBanner = () => {
+    setDirection("next");
     setCurrentBanner((prev) => (prev + 1) % bannerData.length);
   };
 
@@ -168,7 +215,11 @@ const Banner: React.FC = () => {
     <BannerWrapper>
       <BannerContainer>
         {bannerData.map((banner, index) => (
-          <BannerSlide key={index} active={index === currentBanner}>
+          <BannerSlide
+            key={index}
+            active={index === currentBanner}
+            direction={direction}
+          >
             <BannerContent>
               <TextArea>
                 <NoticeTag>{banner.tag}</NoticeTag>
@@ -176,7 +227,7 @@ const Banner: React.FC = () => {
                 <Description>{banner.description}</Description>
               </TextArea>
               <ImageArea>
-                <ChatImage />
+                <BannerImage src={banner.image} alt={banner.title} />
               </ImageArea>
             </BannerContent>
           </BannerSlide>
