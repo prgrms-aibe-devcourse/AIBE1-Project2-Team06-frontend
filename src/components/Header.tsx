@@ -4,7 +4,12 @@ import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import LoginModal from "./LoginModal";
 import { API_BASE_URL, fetchAPI } from "../config/apiConfig";
-import { showAlert, showError } from "../utils/sweetAlert";
+import {
+  showAlert,
+  showError,
+  showConfirm,
+  showSuccess,
+} from "../utils/sweetAlert";
 
 const HeaderContainer = styled.header`
   width: 100%;
@@ -395,11 +400,18 @@ const Header: React.FC = () => {
     navigate("/settings");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    setIsMenuOpen(false);
-    navigate("/");
+  const handleLogout = async () => {
+    // 로그아웃 확인 대화상자 표시
+    const result = await showConfirm("정말 로그아웃 하시겠습니까?", "로그아웃");
+
+    // 사용자가 확인 버튼을 클릭한 경우에만 로그아웃 처리
+    if (result.isConfirmed) {
+      localStorage.removeItem("token");
+      setIsLoggedIn(false);
+      setIsMenuOpen(false);
+      navigate("/");
+      showSuccess("성공적으로 로그아웃 되었습니다.");
+    }
   };
 
   // 컬처핏 모달 열기
