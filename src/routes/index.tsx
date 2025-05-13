@@ -8,6 +8,8 @@ import MyPage from "../pages/MyPage";
 import RecruitFormPage from "../pages/RecruitFormPage";
 import RecruitEditPage from "../pages/RecruitEditPage";
 import ProfilePage from "../pages/ProfilePage";
+import TermsPage from "../pages/TermsPage";
+import PrivacyPage from "../pages/PrivacyPage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -18,6 +20,8 @@ const AppRoutes: React.FC = () => {
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/project/:id" element={<ProjectDetailPage />} />
       <Route path="/profile/:publicId" element={<ProfilePage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       {/* 추후 추가될 라우트들 */}
       <Route path="/projects" element={<div>프로젝트 페이지 (준비중)</div>} />
       <Route path="/teams" element={<Navigate to="/recruit" replace />} />

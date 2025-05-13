@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { Link } from "react-router-dom";
 
 const FooterContainer = styled.footer`
   width: 100%;
@@ -70,9 +71,10 @@ const ColumnTitle = styled.h3`
   margin-bottom: 8px;
 `;
 
-const ColumnItem = styled.a`
+const ColumnItem = styled(Link)`
   font-size: 14px;
   color: #555;
+  text-decoration: none;
 
   &:hover {
     color: ${brandColors.secondary};
@@ -106,25 +108,25 @@ const Footer: React.FC = () => {
         <MiddleSection>
           <Column>
             <ColumnTitle>서비스</ColumnTitle>
-            <ColumnItem href="#">프로젝트</ColumnItem>
-            <ColumnItem href="#">팀원 모집</ColumnItem>
-            <ColumnItem href="#">커뮤니티</ColumnItem>
+            <ColumnItem to="/projects">프로젝트</ColumnItem>
+            <ColumnItem to="/recruit">팀원 모집</ColumnItem>
+            <ColumnItem to="/community">커뮤니티</ColumnItem>
           </Column>
           <Column>
             <ColumnTitle>정보</ColumnTitle>
-            <ColumnItem href="#">이용약관</ColumnItem>
-            <ColumnItem href="#">개인정보처리방침</ColumnItem>
-            <ColumnItem href="#">고객센터</ColumnItem>
+            <ColumnItem to="/terms">이용약관</ColumnItem>
+            <ColumnItem to="/privacy">개인정보처리방침</ColumnItem>
+            <ColumnItem to="/support">고객센터</ColumnItem>
           </Column>
           <Column>
             <ColumnTitle>회사</ColumnTitle>
-            <ColumnItem href="#">Eum 소개</ColumnItem>
-            <ColumnItem href="#">채용</ColumnItem>
+            <ColumnItem to="/about">Eum 소개</ColumnItem>
+            <ColumnItem to="/jobs">채용</ColumnItem>
           </Column>
         </MiddleSection>
 
         <BottomSection>
-          <div>© 2023 Eum. All rights reserved.</div>
+          <div>© 2025 Eum. All rights reserved.</div>
           <div>서울특별시 강남구 테헤란로 123, 456호</div>
           <div>대표: Eum | 사업자등록번호: 123-45-67890</div>
         </BottomSection>
