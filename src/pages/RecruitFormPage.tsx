@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import { useNavigate } from "react-router-dom";
 import { fetchAPI } from "../config/apiConfig";
+import { showAlert, showSuccess, showError } from "../utils/sweetAlert";
 
 // 섹션 타이틀
 const SectionTitle = styled.h2`
@@ -361,32 +362,32 @@ const RecruitFormPage: React.FC = () => {
 
     // 필수 값 검증
     if (!form.title.trim()) {
-      alert("제목을 입력해주세요.");
+      showAlert("제목을 입력해주세요.");
       return;
     }
 
     if (!form.description.trim()) {
-      alert("내용을 입력해주세요.");
+      showAlert("내용을 입력해주세요.");
       return;
     }
 
     if (!form.deadline) {
-      alert("모집 마감일을 선택해주세요.");
+      showAlert("모집 마감일을 선택해주세요.");
       return;
     }
 
     if (selectedStacks.length === 0) {
-      alert("기술 스택을 하나 이상 선택해주세요.");
+      showAlert("기술 스택을 하나 이상 선택해주세요.");
       return;
     }
 
     if (selectedPositions.length === 0) {
-      alert("모집 포지션을 하나 이상 선택해주세요.");
+      showAlert("모집 포지션을 하나 이상 선택해주세요.");
       return;
     }
 
     if (!form.openChat.trim()) {
-      alert("연락 방법을 입력해주세요.");
+      showAlert("연락 방법을 입력해주세요.");
       return;
     }
 
@@ -436,13 +437,13 @@ const RecruitFormPage: React.FC = () => {
       const result = await response.json();
       console.log("등록 성공:", result);
 
-      alert("등록이 완료되었습니다!");
+      showSuccess("등록이 완료되었습니다!");
       // 등록 후 홈페이지로 이동
       navigate("/");
     } catch (err) {
       console.error("등록 중 오류 발생:", err);
       setError("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
-      alert("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+      showError("등록 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }

@@ -3,6 +3,13 @@ import styled from "styled-components";
 import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
 import { brandColors } from "../styles/GlobalStyle";
 import { fetchAPI } from "../config/apiConfig";
+import {
+  showAlert,
+  showSuccess,
+  showError,
+  showWarning,
+  showConfirm,
+} from "../utils/sweetAlert";
 
 // 페이지 컨테이너
 const PageContainer = styled.div`
@@ -880,12 +887,12 @@ const ProjectDetailPage: React.FC = () => {
             (member) => member.nickname === data.nickname
           )
         ) {
-          alert("이미 팀원으로 등록된 사용자입니다.");
+          showWarning("이미 팀원으로 등록된 사용자입니다.");
         }
       }
     } catch (error) {
       console.error("검색 중 오류 발생:", error);
-      alert("검색 중 오류가 발생했습니다. 다시 시도해주세요.");
+      showError("검색 중 오류가 발생했습니다. 다시 시도해주세요.");
       setSearchResults([]);
       setShowResults(false);
     }
@@ -907,7 +914,7 @@ const ProjectDetailPage: React.FC = () => {
         setTeamMembers([...teamMembers, nickname]);
       }
     } else {
-      alert("이미 팀원으로 등록된 사용자입니다.");
+      showWarning("이미 팀원으로 등록된 사용자입니다.");
     }
 
     setSearchKeyword("");
@@ -923,13 +930,13 @@ const ProjectDetailPage: React.FC = () => {
   // 팀원 저장 함수
   const saveTeamMembers = async () => {
     if (!id) {
-      alert("프로젝트 ID가 없습니다.");
+      showAlert("프로젝트 ID가 없습니다.");
       return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("로그인이 필요합니다.");
+      showAlert("로그인이 필요합니다.");
       return;
     }
 
@@ -944,24 +951,29 @@ const ProjectDetailPage: React.FC = () => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          alert("인증이 필요합니다. 다시 로그인해주세요.");
+          showWarning("인증이 필요합니다. 다시 로그인해주세요.");
           return;
         }
-        throw new Error("팀원 정보 저장에 실패했습니다.");
+        const errorText = await response.text().catch(() => "알 수 없는 오류");
+        console.error("팀원 정보 저장 실패:", response.status, errorText);
+        throw new Error(`팀원 정보 저장 실패: ${response.status} ${errorText}`);
       }
 
-      alert("팀원 정보가 성공적으로 저장되었습니다.");
+      // 성공 시 모달을 먼저 닫고
       setIsTeamModalOpen(false);
+      // 그 다음 성공 메시지 표시
+      showSuccess("팀원 정보가 성공적으로 저장되었습니다.");
     } catch (error) {
       console.error("팀원 정보 저장 중 오류 발생:", error);
-      alert("팀원 정보 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+      // 실패 시 모달은 닫지 않고 에러 메시지만 표시 (모달 위에 alert이 표시됨)
+      showError("팀원 정보 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
   // 피어리뷰 제출
   const handleReviewSubmit = async () => {
     if (!selectedTeamMember) {
-      alert("평가할 팀원을 선택해주세요.");
+      showAlert("평가할 팀원을 선택해주세요.");
       return;
     }
 
@@ -970,12 +982,12 @@ const ProjectDetailPage: React.FC = () => {
       technicalRating === null ||
       reCollaborationRating === null
     ) {
-      alert("모든 평가 항목을 선택해주세요.");
+      showAlert("모든 평가 항목을 선택해주세요.");
       return;
     }
 
     if (!reviewComment.trim()) {
-      alert("리뷰 코멘트를 입력해주세요.");
+      showAlert("리뷰 코멘트를 입력해주세요.");
       return;
     }
 
@@ -984,12 +996,12 @@ const ProjectDetailPage: React.FC = () => {
       (m) => m.nickname === selectedTeamMember
     );
     if (!reviewee) {
-      alert("리뷰 대상 팀원 정보를 찾을 수 없습니다.");
+      showAlert("리뷰 대상 팀원 정보를 찾을 수 없습니다.");
       return;
     }
 
     if (!reviewee.publicId) {
-      alert("리뷰 대상 팀원의 publicId가 없습니다.");
+      showAlert("리뷰 대상 팀원의 publicId가 없습니다.");
       return;
     }
 
@@ -1006,21 +1018,32 @@ const ProjectDetailPage: React.FC = () => {
     console.log("피어리뷰 요청 데이터:", reviewData);
 
     try {
+      // 모달 먼저 닫기 (오류 메시지가 모달 뒤에 가려지지 않도록)
+      setIsPeerReviewModalOpen(false);
+
       const response = await fetchAPI("peer-reviews", {
         method: "POST",
         body: JSON.stringify(reviewData),
       });
-      if (!response.ok) throw new Error("리뷰 제출 실패");
-      alert(`${selectedTeamMember}님에 대한 피어 리뷰가 제출되었습니다.`);
-      // 폼 초기화
+
+      // 응답이 성공적이지 않은 경우
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "알 수 없는 오류");
+        console.error("피어 리뷰 제출 실패:", response.status, errorText);
+        throw new Error(`리뷰 제출 실패: ${response.status} ${errorText}`);
+      }
+
+      // 성공 시 폼 초기화 및 메시지 표시
       setSelectedTeamMember("");
       setCollaborationRating(null);
       setTechnicalRating(null);
       setReCollaborationRating(null);
       setReviewComment("");
-      setIsPeerReviewModalOpen(false);
+      showSuccess(`${selectedTeamMember}님에 대한 피어 리뷰가 제출되었습니다.`);
     } catch (e) {
-      alert("리뷰 제출 중 오류가 발생했습니다.");
+      console.error("피어 리뷰 제출 오류:", e);
+      // 모달이 이미 닫혔으므로 alert이 가려지지 않음
+      showError("리뷰 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -1039,7 +1062,7 @@ const ProjectDetailPage: React.FC = () => {
   const handleCultureSubmit = async () => {
     // 모든 질문에 답했는지 확인
     if (cultureAnswers.some((answer) => answer === null)) {
-      alert("모든 질문에 답변해주세요.");
+      showAlert("모든 질문에 답변해주세요.");
       return;
     }
 
@@ -1100,7 +1123,7 @@ const ProjectDetailPage: React.FC = () => {
       );
     } catch (error) {
       console.error("컬처핏 등록 중 오류:", error);
-      alert("컬처핏 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+      showError("컬처핏 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -1130,7 +1153,7 @@ const ProjectDetailPage: React.FC = () => {
       setTeamMembers(uniqueMembers.map((member) => member.nickname));
     } catch (error) {
       console.error("팀원 정보 로딩 중 오류 발생:", error);
-      alert("팀원 정보를 불러오는데 실패했습니다.");
+      showError("팀원 정보를 불러오는데 실패했습니다.");
     }
   };
 
@@ -1141,7 +1164,8 @@ const ProjectDetailPage: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("정말로 이 프로젝트를 삭제하시겠습니까?")) return;
+    const result = await showConfirm("정말로 이 프로젝트를 삭제하시겠습니까?");
+    if (!result.isConfirmed) return;
     if (!id) return;
 
     try {
@@ -1149,10 +1173,10 @@ const ProjectDetailPage: React.FC = () => {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("삭제 실패");
-      alert("삭제가 완료되었습니다.");
+      showSuccess("삭제가 완료되었습니다.");
       navigate("/");
     } catch (e) {
-      alert("삭제 중 오류가 발생했습니다.");
+      showError("삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -1164,12 +1188,23 @@ const ProjectDetailPage: React.FC = () => {
         method: "PATCH",
         body: JSON.stringify({ githubLink }),
       });
-      if (!response.ok) throw new Error("모집 완료 처리 실패");
-      alert("모집이 완료되었습니다.");
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "알 수 없는 오류");
+        console.error("모집 완료 처리 실패:", response.status, errorText);
+        throw new Error(`모집 완료 처리 실패: ${response.status} ${errorText}`);
+      }
+
+      // 성공 시 모달을 먼저 닫고
       setIsCompleteModalOpen(false);
+      // 그 다음 성공 메시지 표시
+      showSuccess("모집이 완료되었습니다.");
+      // 페이지 새로고침
       window.location.reload();
     } catch (e) {
-      alert("모집 완료 처리 중 오류가 발생했습니다.");
+      // 실패 시 모달은 닫지 않고 에러 메시지만 표시
+      console.error("모집 완료 처리 오류:", e);
+      showError("모집 완료 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 

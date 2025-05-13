@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { NavLink, useNavigate } from "react-router-dom";
 import { brandColors } from "../styles/GlobalStyle";
 import { fetchAPI } from "../config/apiConfig";
+import { showAlert } from "../utils/sweetAlert";
 
 // 페이지 컨테이너
 const PageContainer = styled.div`
@@ -368,7 +369,7 @@ const MyPage: React.FC = () => {
 
         if (!response.ok) {
           if (response.status === 401) {
-            alert("로그인이 필요합니다.");
+            showAlert("로그인이 필요합니다.");
             navigate("/");
             return;
           }

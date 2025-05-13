@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import { fetchAPI } from "../config/apiConfig";
+import {
+  showAlert,
+  showSuccess,
+  showError,
+  showConfirm,
+} from "../utils/sweetAlert";
 
 // 전체 컨테이너
 const PageContainer = styled.div`
@@ -447,7 +453,7 @@ const SettingPage: React.FC = () => {
 
         if (!response.ok) {
           if (response.status === 401) {
-            alert("로그인이 필요합니다.");
+            showAlert("로그인이 필요합니다.");
             navigate("/");
             return;
           }
@@ -497,26 +503,26 @@ const SettingPage: React.FC = () => {
 
     // 입력 값 검증
     if (!nickname.trim()) {
-      alert("닉네임을 입력해주세요.");
+      showAlert("닉네임을 입력해주세요.");
       return;
     }
 
     if (!position) {
-      alert("직무를 선택해주세요.");
+      showAlert("직무를 선택해주세요.");
       return;
     }
 
     if (!level) {
-      alert("경력을 선택해주세요.");
+      showAlert("경력을 선택해주세요.");
       return;
     }
 
     // 태그 없으면 경고만 표시하고 진행 (필수가 아닐 수 있으므로)
     if (tags.length === 0) {
-      const proceed = window.confirm(
+      const result = await showConfirm(
         "관심분야가 선택되지 않았습니다. 계속 진행하시겠습니까?"
       );
-      if (!proceed) return;
+      if (!result.isConfirmed) return;
     }
 
     try {
@@ -556,11 +562,11 @@ const SettingPage: React.FC = () => {
       setSaveSuccess(true);
 
       // 성공 메시지 표시 후 홈으로 이동
-      alert("프로필이 성공적으로 저장되었습니다!");
+      showSuccess("프로필이 성공적으로 저장되었습니다!");
       navigate("/mypage");
     } catch (err) {
       console.error("프로필 저장 오류:", err);
-      alert(
+      showError(
         err instanceof Error
           ? err.message
           : "프로필 저장 중 오류가 발생했습니다"
@@ -610,11 +616,13 @@ const SettingPage: React.FC = () => {
   // 취소 처리
   const handleCancel = () => {
     // 사용자에게 확인
-    if (
-      window.confirm("변경 사항이 저장되지 않습니다. 홈으로 이동하시겠습니까?")
-    ) {
-      navigate("/");
-    }
+    showConfirm("변경 사항이 저장되지 않습니다. 홈으로 이동하시겠습니까?").then(
+      (result) => {
+        if (result.isConfirmed) {
+          navigate("/");
+        }
+      }
+    );
   };
 
   if (loading) {

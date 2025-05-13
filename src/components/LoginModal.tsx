@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { showAlert } from "../utils/sweetAlert";
 
 // 카카오 인증 관련 상수
 // 환경 변수에서 값을 가져오거나 기본값 사용
@@ -142,12 +143,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
   // 구글 로그인 처리 함수
   const handleGoogleLogin = () => {
-    alert("구글 로그인은 아직 구현되지 않았습니다.");
+    showAlert("구글 로그인은 아직 구현되지 않았습니다.");
   };
 
   // 깃허브 로그인 처리 함수
   const handleGithubLogin = () => {
-    alert("깃허브 로그인은 아직 구현되지 않았습니다.");
+    showAlert("깃허브 로그인은 아직 구현되지 않았습니다.");
   };
 
   return (

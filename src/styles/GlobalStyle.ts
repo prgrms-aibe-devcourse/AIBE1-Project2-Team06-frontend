@@ -76,6 +76,15 @@ const GlobalStyle = createGlobalStyle`
       color: ${brandColors.primaryDark};
     }
   }
+
+  /* SweetAlert 스타일 오버라이드 */
+  .swal2-container {
+    z-index: 10000 !important; /* 매우 높은 z-index 값 설정 */
+  }
+
+  .swal-high-z-index {
+    z-index: 10000 !important; /* SweetAlert용 커스텀 클래스 */
+  }
 `;
 
 export default GlobalStyle;

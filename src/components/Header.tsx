@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import LoginModal from "./LoginModal";
 import { API_BASE_URL, fetchAPI } from "../config/apiConfig";
+import { showAlert, showError } from "../utils/sweetAlert";
 
 const HeaderContainer = styled.header`
   width: 100%;
@@ -421,7 +422,7 @@ const Header: React.FC = () => {
   const handleCultureSubmit = async () => {
     // 모든 질문에 답했는지 확인
     if (cultureAnswers.some((answer) => answer === null)) {
-      alert("모든 질문에 답변해주세요.");
+      showAlert("모든 질문에 답변해주세요.");
       return;
     }
 
@@ -442,7 +443,7 @@ const Header: React.FC = () => {
 
       // 토큰이 없는 경우 처리
       if (!localStorage.getItem("token")) {
-        alert("로그인이 필요합니다.");
+        showAlert("로그인이 필요합니다.");
         return;
       }
 
@@ -488,7 +489,7 @@ const Header: React.FC = () => {
       );
     } catch (error) {
       console.error("컬처핏 등록 중 오류:", error);
-      alert("컬처핏 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+      showError("컬처핏 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 

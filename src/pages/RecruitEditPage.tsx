@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchAPI } from "../config/apiConfig";
+import { showSuccess, showError } from "../utils/sweetAlert";
 
 // 섹션 타이틀
 const SectionTitle = styled.h2`
@@ -481,11 +482,11 @@ const RecruitEditPage: React.FC = () => {
         throw new Error("모집글 수정에 실패했습니다.");
       }
 
-      alert("모집글이 성공적으로 수정되었습니다.");
+      showSuccess("모집글이 성공적으로 수정되었습니다.");
       navigate(`/project/${id}`);
     } catch (error) {
       console.error("모집글 수정에 실패했습니다:", error);
-      alert("모집글 수정에 실패했습니다.");
+      showError("모집글 수정에 실패했습니다.");
     }
   };
 
