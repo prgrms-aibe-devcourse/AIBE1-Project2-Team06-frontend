@@ -195,6 +195,153 @@ const ScoreValue = styled.span`
   font-weight: 600;
 `;
 
+const EmptyMessage = styled.div`
+  color: #666;
+  font-size: 14px;
+  padding: 20px;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+`;
+
+// 모달 배경
+const ModalBackdrop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+`;
+
+// 모달 컨테이너
+const ModalContainer = styled.div`
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+`;
+
+// 모달 헤더
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+`;
+
+// 모달 제목
+const ModalTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+`;
+
+// 닫기 버튼
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+
+  &:hover {
+    color: #333;
+  }
+`;
+
+// 리뷰 카드
+const ReviewCard = styled.div`
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+// 리뷰어 정보
+const ReviewerInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+`;
+
+// 리뷰어 이름
+const ReviewerName = styled.div`
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+`;
+
+// 리뷰 날짜
+const ReviewDate = styled.div`
+  font-size: 14px;
+  color: #666;
+`;
+
+// 점수 컨테이너
+const ScoreContainer = styled.div`
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+`;
+
+// 점수 항목
+const ScoreItem = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+// 점수 라벨
+const ScoreLabel = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+`;
+
+// 점수
+const Score = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${brandColors.primary};
+`;
+
+// 평균 점수
+const AverageScore = styled.div`
+  font-size: 18px;
+  font-weight: 700;
+  color: ${brandColors.primary};
+  margin-bottom: 12px;
+`;
+
+// 코멘트
+const Comment = styled.div`
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  white-space: pre-line;
+`;
+
+// 리뷰 로딩
+const ReviewLoading = styled.div`
+  text-align: center;
+  padding: 20px;
+  color: #666;
+`;
+
 interface UserProfile {
   nickname: string;
   career: string;
@@ -204,47 +351,45 @@ interface UserProfile {
   techStacks: string[];
 }
 
-// 가상의 활동 데이터 (실제로는 API에서 가져옴)
-const activityData = {
-  projects: [
-    {
-      id: "1",
-      title: "딥톡 SNS 프로젝트",
-      link: "/project/1",
-      reviewScore: 4.5,
-      projectLink: "https://github.com/team/deeptalk",
-    },
-    {
-      id: "2",
-      title: "포트폴리오 웹사이트",
-      link: "/project/2",
-      reviewScore: 4.8,
-      projectLink: "https://github.com/user/portfolio",
-    },
-  ],
-  studies: [
-    {
-      id: "1",
-      title: "React 스터디",
-      link: "/study/1",
-      reviewScore: 4.2,
-      studyLink: "https://github.com/study/react-study",
-    },
-    {
-      id: "2",
-      title: "TypeScript 마스터",
-      link: "/study/2",
-      reviewScore: 4.7,
-      studyLink: "https://github.com/study/typescript-master",
-    },
-  ],
-};
+interface PortfolioItem {
+  id: number;
+  publicId: string;
+  postId: number;
+  postTitle: string;
+  postLink: string;
+  averageScore: number;
+  recruitType: "PROJECT" | "STUDY";
+  createAt: string;
+}
+
+interface Review {
+  id: number;
+  reviewerPublicId: string;
+  reviewerNickname: string;
+  collaborationScore: number;
+  technicalScore: number;
+  workAgainScore: number;
+  averageScore: number;
+  reviewComment: string;
+  reviewDate: string;
+}
 
 const ProfilePage: React.FC = () => {
   const { publicId } = useParams<{ publicId: string }>();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [projects, setProjects] = useState<PortfolioItem[]>([]);
+  const [studies, setStudies] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [portfolioLoading, setPortfolioLoading] = useState({
+    projects: true,
+    studies: true,
+  });
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedPortfolio, setSelectedPortfolio] =
+    useState<PortfolioItem | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -302,10 +447,101 @@ const ProfilePage: React.FC = () => {
       }
     };
 
+    const fetchPortfolioItems = async (recruitType: "PROJECT" | "STUDY") => {
+      try {
+        setPortfolioLoading((prev) => ({
+          ...prev,
+          [recruitType === "PROJECT" ? "projects" : "studies"]: true,
+        }));
+
+        const response = await fetchAPI(
+          `portfolios/${publicId}?recruitType=${recruitType}`,
+          {
+            method: "GET",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `${
+              recruitType === "PROJECT" ? "프로젝트" : "스터디"
+            } 정보를 불러오는데 실패했습니다.`
+          );
+        }
+
+        const data = await response.json();
+        console.log(`${recruitType} 데이터:`, data);
+
+        if (recruitType === "PROJECT") {
+          setProjects(data);
+        } else {
+          setStudies(data);
+        }
+      } catch (err) {
+        console.error(`${recruitType} 로딩 오류:`, err);
+        // 오류 발생해도 빈 배열로 설정하여 UI에서 처리
+        if (recruitType === "PROJECT") {
+          setProjects([]);
+        } else {
+          setStudies([]);
+        }
+      } finally {
+        setPortfolioLoading((prev) => ({
+          ...prev,
+          [recruitType === "PROJECT" ? "projects" : "studies"]: false,
+        }));
+      }
+    };
+
     if (publicId) {
       fetchProfile();
+      fetchPortfolioItems("PROJECT");
+      fetchPortfolioItems("STUDY");
     }
   }, [publicId]);
+
+  const handleReviewClick = async (portfolioItem: PortfolioItem) => {
+    setSelectedPortfolio(portfolioItem);
+    setShowReviewModal(true);
+    setReviewsLoading(true);
+
+    try {
+      const response = await fetchAPI(
+        `portfolios/${publicId}/${portfolioItem.id}/reviews`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("피어리뷰를 불러오는데 실패했습니다.");
+      }
+
+      const data = await response.json();
+      console.log("피어리뷰 데이터:", data);
+      setReviews(data);
+    } catch (err) {
+      console.error("피어리뷰 로딩 오류:", err);
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowReviewModal(false);
+    setSelectedPortfolio(null);
+    setReviews([]);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   if (loading) {
     return <div>프로필을 불러오는 중...</div>;
@@ -386,51 +622,128 @@ const ProfilePage: React.FC = () => {
         <ActivityColumn>
           <SectionTitle>참여한 프로젝트</SectionTitle>
           <ActivityList>
-            {activityData.projects.map((project) => (
-              <ActivityCard key={project.id}>
-                <ActivityTitle>{project.title}</ActivityTitle>
-                <LinkContainer>
-                  <ActivityLink
-                    href={project.projectLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    프로젝트 링크
-                  </ActivityLink>
-                </LinkContainer>
-                <ReviewScore>
-                  피어리뷰 평균 점수:{" "}
-                  <ScoreValue>{project.reviewScore}/5</ScoreValue>
-                </ReviewScore>
-              </ActivityCard>
-            ))}
+            {portfolioLoading.projects ? (
+              <div>프로젝트 정보를 불러오는 중...</div>
+            ) : projects.length > 0 ? (
+              projects.map((project) => (
+                <ActivityCard key={project.id}>
+                  <ActivityTitle>{project.postTitle}</ActivityTitle>
+                  <LinkContainer>
+                    <ActivityLink
+                      href={project.postLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      프로젝트 링크
+                    </ActivityLink>
+                    <ActivityLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleReviewClick(project);
+                      }}
+                    >
+                      피어리뷰 상세보기
+                    </ActivityLink>
+                  </LinkContainer>
+                  <ReviewScore>
+                    피어리뷰 평균 점수:{" "}
+                    <ScoreValue>{project.averageScore.toFixed(1)}/5</ScoreValue>
+                  </ReviewScore>
+                </ActivityCard>
+              ))
+            ) : (
+              <EmptyMessage>참여한 프로젝트가 없습니다.</EmptyMessage>
+            )}
           </ActivityList>
         </ActivityColumn>
 
         <ActivityColumn>
           <SectionTitle>참여한 스터디</SectionTitle>
           <ActivityList>
-            {activityData.studies.map((study) => (
-              <ActivityCard key={study.id}>
-                <ActivityTitle>{study.title}</ActivityTitle>
-                <LinkContainer>
-                  <ActivityLink
-                    href={study.studyLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    스터디 링크
-                  </ActivityLink>
-                </LinkContainer>
-                <ReviewScore>
-                  피어리뷰 평균 점수:{" "}
-                  <ScoreValue>{study.reviewScore}/5</ScoreValue>
-                </ReviewScore>
-              </ActivityCard>
-            ))}
+            {portfolioLoading.studies ? (
+              <div>스터디 정보를 불러오는 중...</div>
+            ) : studies.length > 0 ? (
+              studies.map((study) => (
+                <ActivityCard key={study.id}>
+                  <ActivityTitle>{study.postTitle}</ActivityTitle>
+                  <LinkContainer>
+                    <ActivityLink
+                      href={study.postLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      스터디 링크
+                    </ActivityLink>
+                    <ActivityLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleReviewClick(study);
+                      }}
+                    >
+                      피어리뷰 상세보기
+                    </ActivityLink>
+                  </LinkContainer>
+                  <ReviewScore>
+                    피어리뷰 평균 점수:{" "}
+                    <ScoreValue>{study.averageScore.toFixed(1)}/5</ScoreValue>
+                  </ReviewScore>
+                </ActivityCard>
+              ))
+            ) : (
+              <EmptyMessage>참여한 스터디가 없습니다.</EmptyMessage>
+            )}
           </ActivityList>
         </ActivityColumn>
       </ActivitySection>
+
+      {showReviewModal && selectedPortfolio && (
+        <ModalBackdrop onClick={closeModal}>
+          <ModalContainer onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>{selectedPortfolio.postTitle} 피어리뷰</ModalTitle>
+              <CloseButton onClick={closeModal}>&times;</CloseButton>
+            </ModalHeader>
+
+            {reviewsLoading ? (
+              <ReviewLoading>피어리뷰 정보를 불러오는 중...</ReviewLoading>
+            ) : reviews.length > 0 ? (
+              reviews.map((review) => (
+                <ReviewCard key={review.id}>
+                  <ReviewerInfo>
+                    <ReviewerName>{review.reviewerNickname}</ReviewerName>
+                    <ReviewDate>{formatDate(review.reviewDate)}</ReviewDate>
+                  </ReviewerInfo>
+
+                  <ScoreContainer>
+                    <ScoreItem>
+                      <ScoreLabel>협업 능력</ScoreLabel>
+                      <Score>{review.collaborationScore}</Score>
+                    </ScoreItem>
+                    <ScoreItem>
+                      <ScoreLabel>기술 역량</ScoreLabel>
+                      <Score>{review.technicalScore}</Score>
+                    </ScoreItem>
+                    <ScoreItem>
+                      <ScoreLabel>재협업 의사</ScoreLabel>
+                      <Score>{review.workAgainScore}</Score>
+                    </ScoreItem>
+                  </ScoreContainer>
+
+                  <AverageScore>
+                    평균: {review.averageScore.toFixed(1)}/5
+                  </AverageScore>
+
+                  <Comment>{review.reviewComment}</Comment>
+                </ReviewCard>
+              ))
+            ) : (
+              <EmptyMessage>등록된 피어리뷰가 없습니다.</EmptyMessage>
+            )}
+          </ModalContainer>
+        </ModalBackdrop>
+      )}
     </PageContainer>
   );
 };
