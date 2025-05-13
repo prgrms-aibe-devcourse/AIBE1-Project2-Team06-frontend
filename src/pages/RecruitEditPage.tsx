@@ -318,6 +318,7 @@ const RecruitEditPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [originalPositions, setOriginalPositions] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchRecruitData = async () => {
@@ -336,10 +337,10 @@ const RecruitEditPage: React.FC = () => {
         const data = await response.json();
         console.log("불러온 모집글 데이터:", data);
 
-        // 모집 인원 변환
+        setOriginalPositions(data.positions || []);
+
         let peopleValue =
           data.recruitMember >= 10 ? "10명 이상" : `${data.recruitMember}명`;
-        // 모집 구분 변환
         let typeValue =
           data.recruitType === "STUDY"
             ? "스터디"
@@ -439,7 +440,6 @@ const RecruitEditPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      // 기존 데이터 구조에 맞게 요청 본문 생성
       const requestData = {
         title: formData.title,
         content: formData.content,
@@ -456,15 +456,18 @@ const RecruitEditPage: React.FC = () => {
         progressMethod: progressMethodMap[formData.progressMethod],
         period: periodMap[formData.period],
         deadline: formData.endDate,
-        linkType:
-          formData.contactMethod === "오픈톡"
-            ? "KAKAO"
-            : formData.contactMethod === "이메일"
-            ? "EMAIL"
-            : "GOOGLE",
+        linkType: linkTypeMap[formData.contactMethod],
         link: formData.contactDetail,
         techStackIds: formData.techStack.map((tech) => techStackIdMap[tech]),
-        positionIds: formData.position.map((pos) => positionIdMap[pos]),
+        positionIds: formData.position.map((pos) => {
+          const originalPosition = originalPositions.find(
+            (p) => p.name === pos
+          );
+          if (originalPosition) {
+            return originalPosition.id;
+          }
+          return positionIdMap[pos];
+        }),
       };
 
       console.log("PUT 요청 데이터:", requestData);

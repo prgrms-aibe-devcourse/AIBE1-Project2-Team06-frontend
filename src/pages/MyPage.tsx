@@ -304,6 +304,27 @@ const CommentText = styled.p`
   line-height: 1.5;
 `;
 
+// 사용자 프로필 데이터 타입 정의
+interface UserProfile {
+  nickname: string;
+  career: string;
+  shortDescription: string;
+  profileImageUrl: string | null;
+  position: string;
+  techStacks: string[];
+}
+
+// 포트폴리오 아이템 타입 정의 (프로젝트 또는 스터디)
+interface PortfolioItem {
+  id: number;
+  postId: number;
+  postTitle: string;
+  postLink: string;
+  averageScore: number;
+  recruitType: "PROJECT" | "STUDY";
+  createAt: string;
+}
+
 // 피어리뷰 데이터 타입 정의
 interface PeerReview {
   reviewer: string;
@@ -317,52 +338,6 @@ interface PeerReview {
 interface PeerReviewData {
   [key: string]: PeerReview[];
 }
-
-// 사용자 프로필 데이터 타입 정의
-interface UserProfile {
-  nickname: string;
-  career: string;
-  shortDescription: string;
-  profileImageUrl: string | null;
-  position: string;
-  techStacks: string[];
-}
-
-// 가상의 활동 데이터 (실제로는 API에서 가져옴)
-const activityData = {
-  projects: [
-    {
-      id: "1",
-      title: "딥톡 SNS 프로젝트",
-      link: "/project/1",
-      reviewScore: 4.5,
-      projectLink: "https://github.com/team/deeptalk",
-    },
-    {
-      id: "2",
-      title: "포트폴리오 웹사이트",
-      link: "/project/2",
-      reviewScore: 4.8,
-      projectLink: "https://github.com/user/portfolio",
-    },
-  ],
-  studies: [
-    {
-      id: "1",
-      title: "React 스터디",
-      link: "/study/1",
-      reviewScore: 4.2,
-      studyLink: "https://github.com/study/react-study",
-    },
-    {
-      id: "2",
-      title: "TypeScript 마스터",
-      link: "/study/2",
-      reviewScore: 4.7,
-      studyLink: "https://github.com/study/typescript-master",
-    },
-  ],
-};
 
 // 가상의 피어리뷰 데이터 (실제로는 API에서 가져옴)
 const peerReviewData: PeerReviewData = {
@@ -406,8 +381,12 @@ const MyPage: React.FC = () => {
   } | null>(null);
 
   const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [projects, setProjects] = useState<PortfolioItem[]>([]);
+  const [studies, setStudies] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [portfolioLoading, setPortfolioLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [portfolioError, setPortfolioError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -467,7 +446,49 @@ const MyPage: React.FC = () => {
       }
     };
 
+    const fetchPortfolios = async () => {
+      try {
+        setPortfolioLoading(true);
+
+        // 프로젝트 데이터 가져오기
+        const projectResponse = await fetchAPI(
+          "portfolios/my?recruitType=PROJECT",
+          {
+            method: "GET",
+          }
+        );
+
+        if (!projectResponse.ok) {
+          throw new Error("프로젝트 정보를 불러오는데 실패했습니다.");
+        }
+
+        const projectData = await projectResponse.json();
+        setProjects(projectData);
+
+        // 스터디 데이터 가져오기
+        const studyResponse = await fetchAPI(
+          "portfolios/my?recruitType=STUDY",
+          {
+            method: "GET",
+          }
+        );
+
+        if (!studyResponse.ok) {
+          throw new Error("스터디 정보를 불러오는데 실패했습니다.");
+        }
+
+        const studyData = await studyResponse.json();
+        setStudies(studyData);
+      } catch (error) {
+        console.error("포트폴리오 로딩 오류:", error);
+        setPortfolioError("포트폴리오 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setPortfolioLoading(false);
+      }
+    };
+
     fetchUserProfile();
+    fetchPortfolios();
   }, [navigate]);
 
   const handleReviewClick = (
@@ -560,68 +581,92 @@ const MyPage: React.FC = () => {
       <ActivitySection>
         <ActivityColumn>
           <SectionTitle>참여한 프로젝트</SectionTitle>
-          <ActivityList>
-            {activityData.projects.map((project) => (
-              <ActivityCard key={project.id}>
-                <ActivityTitle>{project.title}</ActivityTitle>
-                <LinkContainer>
-                  <ActivityLink
-                    href={project.projectLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    프로젝트 링크
-                  </ActivityLink>
-                  <ActivityLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleReviewClick("project", project.id, project.title);
-                    }}
-                  >
-                    피어리뷰 상세보기
-                  </ActivityLink>
-                </LinkContainer>
-                <ReviewScore>
-                  피어리뷰 평균 점수:{" "}
-                  <ScoreValue>{project.reviewScore}/5</ScoreValue>
-                </ReviewScore>
-              </ActivityCard>
-            ))}
-          </ActivityList>
+          {portfolioLoading ? (
+            <div>프로젝트 정보를 불러오는 중...</div>
+          ) : portfolioError ? (
+            <div>{portfolioError}</div>
+          ) : projects.length === 0 ? (
+            <div>참여한 프로젝트가 없습니다.</div>
+          ) : (
+            <ActivityList>
+              {projects.map((project) => (
+                <ActivityCard key={project.id}>
+                  <ActivityTitle>{project.postTitle}</ActivityTitle>
+                  <LinkContainer>
+                    <ActivityLink
+                      href={project.postLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      프로젝트 링크
+                    </ActivityLink>
+                    <ActivityLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleReviewClick(
+                          "project",
+                          project.id.toString(),
+                          project.postTitle
+                        );
+                      }}
+                    >
+                      피어리뷰 상세보기
+                    </ActivityLink>
+                  </LinkContainer>
+                  <ReviewScore>
+                    피어리뷰 평균 점수:{" "}
+                    <ScoreValue>{project.averageScore.toFixed(1)}/5</ScoreValue>
+                  </ReviewScore>
+                </ActivityCard>
+              ))}
+            </ActivityList>
+          )}
         </ActivityColumn>
 
         <ActivityColumn>
           <SectionTitle>참여한 스터디</SectionTitle>
-          <ActivityList>
-            {activityData.studies.map((study) => (
-              <ActivityCard key={study.id}>
-                <ActivityTitle>{study.title}</ActivityTitle>
-                <LinkContainer>
-                  <ActivityLink
-                    href={study.studyLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    스터디 링크
-                  </ActivityLink>
-                  <ActivityLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleReviewClick("study", study.id, study.title);
-                    }}
-                  >
-                    피어리뷰 상세보기
-                  </ActivityLink>
-                </LinkContainer>
-                <ReviewScore>
-                  피어리뷰 평균 점수:{" "}
-                  <ScoreValue>{study.reviewScore}/5</ScoreValue>
-                </ReviewScore>
-              </ActivityCard>
-            ))}
-          </ActivityList>
+          {portfolioLoading ? (
+            <div>스터디 정보를 불러오는 중...</div>
+          ) : portfolioError ? (
+            <div>{portfolioError}</div>
+          ) : studies.length === 0 ? (
+            <div>참여한 스터디가 없습니다.</div>
+          ) : (
+            <ActivityList>
+              {studies.map((study) => (
+                <ActivityCard key={study.id}>
+                  <ActivityTitle>{study.postTitle}</ActivityTitle>
+                  <LinkContainer>
+                    <ActivityLink
+                      href={study.postLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      스터디 링크
+                    </ActivityLink>
+                    <ActivityLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleReviewClick(
+                          "study",
+                          study.id.toString(),
+                          study.postTitle
+                        );
+                      }}
+                    >
+                      피어리뷰 상세보기
+                    </ActivityLink>
+                  </LinkContainer>
+                  <ReviewScore>
+                    피어리뷰 평균 점수:{" "}
+                    <ScoreValue>{study.averageScore.toFixed(1)}/5</ScoreValue>
+                  </ReviewScore>
+                </ActivityCard>
+              ))}
+            </ActivityList>
+          )}
         </ActivityColumn>
       </ActivitySection>
 
