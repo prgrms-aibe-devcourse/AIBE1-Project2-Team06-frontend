@@ -846,7 +846,7 @@ const ProjectDetailPage: React.FC = () => {
     navigate(-1);
   };
 
-  // 닉네임 검색 함수
+  // 팀원 검색 함수
   const searchMembers = async () => {
     if (searchKeyword.trim() === "") {
       setSearchResults([]);
@@ -865,12 +865,23 @@ const ProjectDetailPage: React.FC = () => {
 
       const data = await response.json();
 
-      if (data && !teamMembers.includes(data.nickname)) {
+      // 이미 팀원으로 등록된 사용자인지 확인
+      if (
+        data &&
+        !existingTeamMembers.some((member) => member.nickname === data.nickname)
+      ) {
         setSearchResults([{ nickname: data.nickname }]);
         setShowResults(true);
       } else {
         setSearchResults([]);
         setShowResults(false);
+        if (
+          existingTeamMembers.some(
+            (member) => member.nickname === data.nickname
+          )
+        ) {
+          alert("이미 팀원으로 등록된 사용자입니다.");
+        }
       }
     } catch (error) {
       console.error("검색 중 오류 발생:", error);
@@ -889,9 +900,16 @@ const ProjectDetailPage: React.FC = () => {
 
   // 팀원 추가
   const addTeamMember = (nickname: string) => {
-    if (!teamMembers.includes(nickname)) {
-      setTeamMembers([...teamMembers, nickname]);
+    // 이미 등록된 팀원인지 체크
+    if (!existingTeamMembers.some((member) => member.nickname === nickname)) {
+      // 중복 추가 방지
+      if (!teamMembers.includes(nickname)) {
+        setTeamMembers([...teamMembers, nickname]);
+      }
+    } else {
+      alert("이미 팀원으로 등록된 사용자입니다.");
     }
+
     setSearchKeyword("");
     setSearchResults([]);
     setShowResults(false);
@@ -1100,9 +1118,16 @@ const ProjectDetailPage: React.FC = () => {
       }
 
       const data: TeamMember[] = await response.json();
-      setExistingTeamMembers(data);
+
+      // 중복 제거
+      const uniqueMembers = data.filter(
+        (member, index, self) =>
+          index === self.findIndex((m) => m.nickname === member.nickname)
+      );
+
+      setExistingTeamMembers(uniqueMembers);
       // 기존 팀원들의 닉네임을 teamMembers 상태에도 설정
-      setTeamMembers(data.map((member) => member.nickname));
+      setTeamMembers(uniqueMembers.map((member) => member.nickname));
     } catch (error) {
       console.error("팀원 정보 로딩 중 오류 발생:", error);
       alert("팀원 정보를 불러오는데 실패했습니다.");
@@ -1366,11 +1391,15 @@ const ProjectDetailPage: React.FC = () => {
                   onChange={(e) => setSelectedTeamMember(e.target.value)}
                 >
                   <option value="">평가할 팀원을 선택하세요</option>
-                  {existingTeamMembers.map((member) => (
-                    <option key={member.memberId} value={member.nickname}>
-                      {member.nickname}
-                    </option>
-                  ))}
+                  {existingTeamMembers
+                    .filter(
+                      (member) => member.nickname !== projectData.nickname
+                    ) // 본인은 제외
+                    .map((member) => (
+                      <option key={member.memberId} value={member.nickname}>
+                        {member.nickname}
+                      </option>
+                    ))}
                 </Select>
               </FormGroup>
               <FormGroup>
