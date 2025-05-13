@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { dropdownFadeIn, smoothTransition } from "../styles/animations";
 import LoginModal from "./LoginModal";
 import { API_BASE_URL, fetchAPI } from "../config/apiConfig";
 import {
@@ -68,6 +69,12 @@ const ProfileIcon = styled.div`
   cursor: pointer;
   border: 2px solid ${brandColors.primary};
   position: relative;
+  ${smoothTransition}
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 // 사용자 메뉴 드롭다운
@@ -78,9 +85,13 @@ const UserMenu = styled.div`
   width: 180px;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
   z-index: 1000;
+  transform-origin: top center;
+  animation: ${dropdownFadeIn} 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+    forwards;
+  overflow: hidden;
 `;
 
 const MenuItem = styled.div`
@@ -88,9 +99,12 @@ const MenuItem = styled.div`
   font-size: 14px;
   color: #333;
   cursor: pointer;
+  ${smoothTransition}
 
   &:hover {
-    background-color: #f5f5f5;
+    background-color: ${brandColors.primaryLight}20;
+    color: ${brandColors.primary};
+    transform: translateX(2px);
   }
 `;
 
@@ -331,6 +345,7 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // 컬처핏 상태
   const [isCultureFitOpen, setIsCultureFitOpen] = useState(false);
@@ -380,6 +395,23 @@ const Header: React.FC = () => {
       clearInterval(intervalId);
     };
   }, [location.pathname, isLoggedIn]); // location과 로그인 상태 변경 시 확인
+
+  // 메뉴 외부 클릭 감지를 위한 useEffect 추가
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const handleLoginClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -520,23 +552,27 @@ const Header: React.FC = () => {
               <NavItem onClick={handleOpenCultureFit}>나의 컬처핏</NavItem>
             )}
             {isLoggedIn ? (
-              <ProfileIcon onClick={handleProfileClick}>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill={brandColors.primary}
-                >
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-                </svg>
-                {isMenuOpen && (
-                  <UserMenu>
-                    <MenuItem onClick={handleMyPageClick}>마이페이지</MenuItem>
-                    <MenuItem onClick={handleSettingsClick}>설정</MenuItem>
-                    <MenuItem onClick={handleLogout}>로그아웃</MenuItem>
-                  </UserMenu>
-                )}
-              </ProfileIcon>
+              <div ref={menuRef}>
+                <ProfileIcon onClick={handleProfileClick}>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill={brandColors.primary}
+                  >
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                  </svg>
+                  {isMenuOpen && (
+                    <UserMenu>
+                      <MenuItem onClick={handleMyPageClick}>
+                        마이페이지
+                      </MenuItem>
+                      <MenuItem onClick={handleSettingsClick}>설정</MenuItem>
+                      <MenuItem onClick={handleLogout}>로그아웃</MenuItem>
+                    </UserMenu>
+                  )}
+                </ProfileIcon>
+              </div>
             ) : (
               <NavItem onClick={handleLoginClick}>로그인</NavItem>
             )}

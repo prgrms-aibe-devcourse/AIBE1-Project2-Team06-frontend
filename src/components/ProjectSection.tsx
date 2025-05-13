@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { brandColors } from "../styles/GlobalStyle";
+import { dropdownAnimation, smoothTransition } from "../styles/animations";
 import { useNavigate, Link } from "react-router-dom";
 import { fetchAPI } from "../config/apiConfig";
 // import { FaThumbsUp } from 'react-icons/fa';
@@ -284,6 +285,26 @@ const FilterSelect = styled.select`
   border: 1px solid #ddd;
   background: #fff;
   font-size: 15px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 28px;
+  ${smoothTransition}
+
+  &:hover, &:focus {
+    border-color: ${brandColors.primary};
+    box-shadow: 0 0 0 2px ${brandColors.primaryLight}30;
+  }
+
+  // 옵션에 애니메이션 적용
+  option {
+    padding: 10px;
+  }
 `;
 
 // ToggleButton 컴포넌트 다시 추가
@@ -295,6 +316,16 @@ const ToggleButton = styled.button<{ active: boolean }>`
   color: ${({ active }) => (active ? "#00bfae" : "#333")};
   font-weight: 500;
   cursor: pointer;
+  ${smoothTransition}
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 // 검색창 스타일 컴포넌트 추가
@@ -311,10 +342,14 @@ const SearchInput = styled.input`
   background: #f5f5f5;
   font-size: 15px;
   width: 250px;
+  ${smoothTransition}
+
   &:focus {
     outline: none;
     border-color: ${brandColors.primary};
     background: #fff;
+    box-shadow: 0 0 0 2px ${brandColors.primaryLight}30;
+    width: 280px;
   }
 `;
 
@@ -325,6 +360,48 @@ const SearchIcon = styled.div`
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  ${smoothTransition}
+`;
+
+// 선택된 태그 스타일 개선
+const SelectedTagsContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+`;
+
+const SelectedTag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  background: #e6fcfa;
+  color: #00bfae;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  ${smoothTransition}
+
+  &:hover {
+    background: #d0f7f4;
+    transform: translateY(-1px);
+  }
+`;
+
+const RemoveTagButton = styled.button`
+  margin-left: 6px;
+  background: none;
+  border: none;
+  color: #00bfae;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  ${smoothTransition}
+
+  &:hover {
+    color: #008b80;
+    transform: scale(1.2);
+  }
 `;
 
 interface ProjectCardItemProps {
@@ -795,9 +872,8 @@ const ProjectSection: React.FC = () => {
 
   // 카테고리 변경 핸들러 함수
   const handleCategoryChange = (category: string) => {
-    // 카테고리가 변경되면 페이지를 0으로 초기화
-    setCurrentPage(0);
     setActiveCategory(category);
+    setCurrentPage(0);
   };
 
   // 페이지 번호 생성
@@ -1003,50 +1079,22 @@ const ProjectSection: React.FC = () => {
         </FilterBar>
 
         {/* 선택된 기술 스택 태그 표시 */}
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-            flexWrap: "wrap",
-            marginBottom: "16px",
-          }}
-        >
+        <SelectedTagsContainer>
           {selectedTechs.map((tech) => (
-            <span
-              key={tech}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                background: "#e6fcfa",
-                color: "#00bfae",
-                borderRadius: "16px",
-                padding: "4px 12px",
-                fontSize: "14px",
-                fontWeight: 500,
-              }}
-            >
+            <SelectedTag key={tech}>
               {tech}
-              <button
+              <RemoveTagButton
                 onClick={(e) => {
                   e.stopPropagation();
                   handleRemoveTech(tech);
                 }}
-                style={{
-                  marginLeft: "6px",
-                  background: "none",
-                  border: "none",
-                  color: "#00bfae",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
                 aria-label={`${tech} 제거`}
               >
                 ×
-              </button>
-            </span>
+              </RemoveTagButton>
+            </SelectedTag>
           ))}
-        </div>
+        </SelectedTagsContainer>
 
         {isLoading ? (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
