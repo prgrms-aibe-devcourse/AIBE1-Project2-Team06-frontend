@@ -327,51 +327,16 @@ interface PortfolioItem {
 
 // 피어리뷰 데이터 타입 정의
 interface PeerReview {
-  reviewer: string;
+  id: number;
+  reviewerPublicId: string;
+  reviewerNickname: string;
   collaborationScore: number;
   technicalScore: number;
-  wantToWorkAgain: number;
+  workAgainScore: number;
   averageScore: number;
-  comment: string;
+  reviewComment: string;
+  reviewDate: string;
 }
-
-interface PeerReviewData {
-  [key: string]: PeerReview[];
-}
-
-// 가상의 피어리뷰 데이터 (실제로는 API에서 가져옴)
-const peerReviewData: PeerReviewData = {
-  "1": [
-    {
-      reviewer: "김개발",
-      collaborationScore: 4.5,
-      technicalScore: 4.8,
-      wantToWorkAgain: 4.7,
-      averageScore: 4.65,
-      comment:
-        "매우 적극적이고 책임감 있게 프로젝트에 참여했습니다. 기술적으로도 많은 기여를 해주셨습니다.",
-    },
-    {
-      reviewer: "이디자인",
-      collaborationScore: 4.2,
-      technicalScore: 4.0,
-      wantToWorkAgain: 4.3,
-      averageScore: 4.1,
-      comment:
-        "팀원들과의 소통이 원활했고, 적극적으로 의견을 제시해주셨습니다.",
-    },
-  ],
-  "2": [
-    {
-      reviewer: "박프론트",
-      collaborationScore: 4.7,
-      technicalScore: 4.9,
-      wantToWorkAgain: 4.8,
-      averageScore: 4.8,
-      comment: "기술적 역량이 뛰어나고, 팀원들을 잘 이끌어주셨습니다.",
-    },
-  ],
-};
 
 const MyPage: React.FC = () => {
   const [selectedReview, setSelectedReview] = useState<{
@@ -383,10 +348,13 @@ const MyPage: React.FC = () => {
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [projects, setProjects] = useState<PortfolioItem[]>([]);
   const [studies, setStudies] = useState<PortfolioItem[]>([]);
+  const [reviews, setReviews] = useState<PeerReview[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [portfolioLoading, setPortfolioLoading] = useState<boolean>(true);
+  const [reviewsLoading, setReviewsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -491,12 +459,33 @@ const MyPage: React.FC = () => {
     fetchPortfolios();
   }, [navigate]);
 
-  const handleReviewClick = (
+  const handleReviewClick = async (
     type: "project" | "study",
     id: string,
     title: string
   ) => {
-    setSelectedReview({ type, id, title });
+    try {
+      setReviewsLoading(true);
+      setReviews([]);
+      setReviewsError(null);
+
+      const response = await fetchAPI(`portfolios/${id}/reviews`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("피어리뷰 정보를 불러오는데 실패했습니다.");
+      }
+
+      const reviewsData = await response.json();
+      setReviews(reviewsData);
+      setSelectedReview({ type, id, title });
+    } catch (error) {
+      console.error("피어리뷰 로딩 오류:", error);
+      setReviewsError("피어리뷰 정보를 불러오는데 실패했습니다.");
+    } finally {
+      setReviewsLoading(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -676,11 +665,17 @@ const MyPage: React.FC = () => {
             <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             <ModalTitle>{selectedReview.title} - 피어리뷰</ModalTitle>
             <ReviewList>
-              {peerReviewData[selectedReview.id]?.map(
-                (review: PeerReview, index: number) => (
-                  <ReviewCard key={index}>
+              {reviewsLoading ? (
+                <div>피어리뷰를 불러오는 중...</div>
+              ) : reviewsError ? (
+                <div>{reviewsError}</div>
+              ) : reviews.length === 0 ? (
+                <div>피어리뷰가 없습니다.</div>
+              ) : (
+                reviews.map((review) => (
+                  <ReviewCard key={review.id}>
                     <ReviewerInfo>
-                      <ReviewerName>{review.reviewer}</ReviewerName>
+                      <ReviewerName>{review.reviewerNickname}</ReviewerName>
                     </ReviewerInfo>
                     <ScoreGrid>
                       <ScoreItem>
@@ -693,19 +688,21 @@ const MyPage: React.FC = () => {
                       </ScoreItem>
                       <ScoreItem>
                         <ScoreLabel>평균 점수</ScoreLabel>
-                        <ScoreValue>{review.averageScore}/5</ScoreValue>
+                        <ScoreValue>
+                          {review.averageScore.toFixed(1)}/5
+                        </ScoreValue>
                       </ScoreItem>
                       <ScoreItem>
                         <ScoreLabel>다시 함께하고 싶은지</ScoreLabel>
-                        <ScoreValue>{review.wantToWorkAgain}/5</ScoreValue>
+                        <ScoreValue>{review.workAgainScore}/5</ScoreValue>
                       </ScoreItem>
                     </ScoreGrid>
                     <CommentSection>
                       <CommentLabel>리뷰 코멘트</CommentLabel>
-                      <CommentText>{review.comment}</CommentText>
+                      <CommentText>{review.reviewComment}</CommentText>
                     </CommentSection>
                   </ReviewCard>
-                )
+                ))
               )}
             </ReviewList>
           </ModalContent>
